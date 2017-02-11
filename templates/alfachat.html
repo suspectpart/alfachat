@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<meta charset="utf-8">
+		<title>Alfachat</title>
+		<script type="text/javascript">
+			history.replaceState(null, document.title, location.href);
+		</script>
+	</head>
+	<body style="font-family: Courier New">
+		<div style="position: absolute; width: 95%; height: 85%; " >
+			<h1 style="position: relative;">Willkommen im Alfachat, {{user}}!</h1>
+			<iframe src="messages/{{user_id}}#bottom" style="position: relative; border: 0px; overflow:scroll; width: 95%; height: 75%; top: 10px;" charset="utf-8"></iframe>
+			<form style="position: relative; top: 50px;" method="post">
+				<span>Message: &nbsp;</span><input type="text" name="message" style="width:75%" autofocus />
+				<input type="submit" value="go!" />
+			</form>
+		</div>
+	</body>
+</html>

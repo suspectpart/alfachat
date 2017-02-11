@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+chat.log
+chat.log.bak
+access.log
+config.py
