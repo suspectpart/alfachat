@@ -12,8 +12,9 @@ from flask import escape
 from flask import Flask
 from flask import request
 from flask import render_template
+from flask import send_from_directory
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 
 # log stuff
 logger = logging.getLogger('werkzeug')
@@ -53,9 +54,9 @@ def get_appointments():
         return "Keine Termine."
         
 
-@app.route("/robots.txt")
-def robots():
-    return "<pre>User-agent: *\nDisallow: /\n</pre>"
+@app.route('/robots.txt')
+def static_from_root():
+    return send_from_directory(app.static_folder, request.path[1:])
 
 @app.route("/<token>", methods=['POST', 'GET'])
 def hello(token):
