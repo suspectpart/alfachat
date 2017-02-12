@@ -3,6 +3,9 @@ chat.log
 access.log
 config.py
 
+#vim swap files
+*.swp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
