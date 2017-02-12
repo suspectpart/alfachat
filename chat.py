@@ -29,35 +29,35 @@ def static_from_root():
 @app.route("/<token>", methods=['POST', 'GET'])
 def hello(token):
     try:
-        user, color, number = config.users[uuid.UUID(token)]
+        user = ac.User(*config.users[uuid.UUID(token)])
     except:
         abort(404)
 
     if request.method == 'POST':
-        message = ac.MessageLine(user, escape(request.form['message']), color)
+        message = ac.MessageLine(user.username, escape(request.form['message']), user.color)
         
         with open("chat.log", 'a+') as f:
             for u in config.users.values():
                 if message.message.startswith("@{0} ".format(u[0])):
-                    message.visible_to = [user, u[0]]
+                    message.visible_to = [user.username, u[0]]
                     
                 if message.message.startswith("@bot sms {0}".format(u[0])):
-                    message.visible_to = [user]
-                    ac.send_sms_to(config.sms_config, u[2], "[{0}] ".format(user) + " ".join(message.message.split()[3:]))
+                    message.visible_to = [user.username]
+                    ac.send_sms_to(config.sms_config, u[2], "[{0}] ".format(user.username) + " ".join(message.message.split()[3:]))
             
             f.write(str(message) + "\n")
             
             if message.message == "@bot termine":
                 f.write(str(ac.MessageLine("alfabot", ac.get_appointments(), "gray")) + "\n")
    
-    return render_template('alfachat.html', user=user, user_id=uuid.UUID(token))
+    return render_template('alfachat.html', user=user.username, user_id=uuid.UUID(token))
 
 @app.route("/messages/<user_id>")
 def messages(user_id):
     log = ""
     messages = []
     
-    user = config.users[uuid.UUID(user_id)][0]
+    user = ac.User(*config.users[uuid.UUID(user_id)]).username
  
     pattern = re.compile(r'(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)')
 
