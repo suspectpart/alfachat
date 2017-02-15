@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 import alfachat as ac
 import config
-import json
 import logging
-import os
-import re
 import uuid
 from flask import abort
 from flask import escape
@@ -37,7 +34,7 @@ def hello(token):
     if request.method == 'POST':
         message_string = escape(request.form['message'])
         message = ac.MessageParser().parse(user, message_string)
-        ac.persist(message.lines())
+        ac.write_chat(message.lines())
 
     return render_template('alfachat.html', user=user.username, user_id=uuid.UUID(token))
 
@@ -46,18 +43,7 @@ def hello(token):
 def messages(user_id):
     user = ac.User(*config.users[uuid.UUID(user_id)]).username
 
-    pattern = re.compile(r'(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)')
-
-    if os.path.isfile("chat.log"):
-        with open("chat.log", "r") as f:
-            log = f.read().split("\n")
-            for line in log:
-                if line.strip():
-                    msg_json = ac.MessageEncoder().decode(json.loads(line))
-                    msg_json.message = re.sub(pattern, r'<a href="\g<1>" target="_blank">\g<1></a>', msg_json.message)
-                    messages.append(msg_json)
-
-    return render_template('messages.html', messages=messages, user=user)
+    return render_template('messages.html', messages=ac.read_chat(), user=user)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import config
 import json
 import os
+import re
 import requests
 from datetime import datetime
 
@@ -10,10 +11,29 @@ def send_sms_to(sms_config, number, text):
     return requests.get(url.format(sms_config[0], sms_config[1], number, text))
 
 
-def persist(message_lines):
+def write_chat(message_lines):
     with open("chat.log", 'a+') as f:
         for line in message_lines:
             f.write(str(line) + "\n")
+
+
+def read_chat():
+    pattern = re.compile(r'(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)')
+
+    messages = []
+
+    if not os.path.isfile("chat.log"):
+        return []
+
+    with open("chat.log", "r") as f:
+        log = f.read().split("\n")
+        for line in log:
+            if line.strip():
+                msg_json = MessageEncoder().decode(json.loads(line))
+                msg_json.message = re.sub(pattern, r'<a href="\g<1>" target="_blank">\g<1></a>', msg_json.message)
+                messages.append(msg_json)
+
+    return messages
 
 
 def get_user_by_name(name):
@@ -77,12 +97,10 @@ class AppointmentMessage(object):
         self.user = user
 
     def lines(self):
-        lines = []
-
-        lines.append(MessageLine(self.user.username, self.message_string, self.user.color))
-        lines.append(MessageLine("alfabot", get_appointments(), "gray"))
-
-        return lines
+        return [
+            MessageLine(self.user.username, self.message_string, self.user.color),
+            MessageLine("alfabot", get_appointments(), "gray")
+        ]
 
 
 class PlainTextMessage(object):
@@ -94,7 +112,6 @@ class PlainTextMessage(object):
         return [MessageLine(self.user.username, self.message_string, self.user.color)]
 
 
-
 class PrivateMessage(object):
     def __init__(self, user, message_string):
         self.message_string = message_string
@@ -102,7 +119,8 @@ class PrivateMessage(object):
         self.recipient = get_user_by_name(self.message_string.split()[0][1:])
 
     def lines(self):
-        return [MessageLine(self.user.username, self.message_string, self.user.color, visible_to = [self.user.username, self.recipient.username])]
+        return [MessageLine(self.user.username, self.message_string, self.user.color,
+                            visible_to=[self.user.username, self.recipient.username])]
 
 
 class User(object):
