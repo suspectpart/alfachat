@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import alfachat as ac
 import config
 import json
@@ -26,39 +26,26 @@ app.logger.addHandler(handler)
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
 
+
 @app.route("/<token>", methods=['POST', 'GET'])
 def hello(token):
     try:
         user = ac.User(*config.users[uuid.UUID(token)])
     except:
-        abort(404)
+        return abort(404)
 
     if request.method == 'POST':
-        message = ac.MessageLine(user.username, escape(request.form['message']), user.color)
-        
-        with open("chat.log", 'a+') as f:
-            for u in config.users.values():
-                if message.message.startswith("@{0} ".format(u[0])):
-                    message.visible_to = [user.username, u[0]]
-                    
-                if message.message.startswith("@bot sms {0}".format(u[0])):
-                    message.visible_to = [user.username]
-                    ac.send_sms_to(config.sms_config, u[2], "[{0}] ".format(user.username) + " ".join(message.message.split()[3:]))
-            
-            f.write(str(message) + "\n")
-            
-            if message.message == "@bot termine":
-                f.write(str(ac.MessageLine("alfabot", ac.get_appointments(), "gray")) + "\n")
-   
+        message_string = escape(request.form['message'])
+        message = ac.MessageParser().parse(user, message_string)
+        ac.persist(message.lines())
+
     return render_template('alfachat.html', user=user.username, user_id=uuid.UUID(token))
+
 
 @app.route("/messages/<user_id>")
 def messages(user_id):
-    log = ""
-    messages = []
-    
     user = ac.User(*config.users[uuid.UUID(user_id)]).username
- 
+
     pattern = re.compile(r'(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)')
 
     if os.path.isfile("chat.log"):
@@ -69,7 +56,7 @@ def messages(user_id):
                     msg_json = ac.MessageEncoder().decode(json.loads(line))
                     msg_json.message = re.sub(pattern, r'<a href="\g<1>" target="_blank">\g<1></a>', msg_json.message)
                     messages.append(msg_json)
-        
+
     return render_template('messages.html', messages=messages, user=user)
 
 
