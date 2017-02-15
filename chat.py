@@ -32,8 +32,8 @@ def hello(token):
         return abort(404)
 
     if request.method == 'POST':
-        message_string = escape(request.form['message'])
-        message = ac.MessageParser().parse(user, message_string)
+        message_string = request.form['message']
+        message = ac.MessageParser().parse(user, escape(message_string))
         ac.write_chat(message.lines())
 
     return render_template('alfachat.html', user=user.username, user_id=uuid.UUID(token))

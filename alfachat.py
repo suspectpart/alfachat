@@ -83,12 +83,22 @@ class SmsMessage(object):
 
         sms_text = self.message_string.split()[3:]
 
-        lines.append(MessageLine(self.user.username, self.message_string, self.user.color))
         lines.append(MessageLine("alfabot", "SMS sent to {0}".format(self.recipient.username), "gray",
                                  visible_to=[self.user.username, self.recipient.username]))
         send_sms_to(config.sms_config, self.recipient.number, "[{0}] ".format(self.user.username) + " ".join(sms_text))
 
         return lines
+
+
+class AnnouncementMessage(object):
+    def __init__(self, user, message_string):
+        self.user = user
+        self.message_string = message_string
+
+    def lines(self):
+        announcement_text = " ".join(self.message_string.split()[2:])
+        message = "<b>++++Öffentliche Kundmachung++++</b> <br/><br/>{0}".format(announcement_text)
+        return [MessageLine("alfabot", message, "gray")]
 
 
 class AppointmentMessage(object):
@@ -97,10 +107,7 @@ class AppointmentMessage(object):
         self.user = user
 
     def lines(self):
-        return [
-            MessageLine(self.user.username, self.message_string, self.user.color),
-            MessageLine("alfabot", get_appointments(), "gray")
-        ]
+        return [MessageLine("alfabot", get_appointments(), "gray")]
 
 
 class PlainTextMessage(object):
@@ -139,6 +146,8 @@ class MessageParser(object):
             return AppointmentMessage(user, message_string)
         if message_string.startswith("@bot sms"):
             return SmsMessage(user, message_string)
+        if message_string.startswith("@bot announce"):
+            return AnnouncementMessage(user, message_string)
         if any([message_string.startswith("@{0}".format(v[0])) for _, v in config.users.items()]):
             return PrivateMessage(user, message_string)
         return PlainTextMessage(user, message_string)
