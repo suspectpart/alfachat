@@ -130,6 +130,20 @@ class PrivateMessage(object):
                             visible_to=[self.user.username, self.recipient.username])]
 
 
+class HelpMessage(object):
+    def __init__(self, user):
+        self.user = user
+
+    def lines(self):
+        help_text = "<b>Hilfe</b><br/><br/> \
+            @&lt;user&gt; - Private Nachricht an &lt;user&gt; schreiben <br/><br /> \
+            @bot announce &lt;text&gt; - Öffentliche Kundmachung versenden <br/> \
+            @bot sms &lt;user&gt; &lt;text&gt; - SMS mit &lt;text&gt; an &lt;user&gt; versenden <br/> \
+            @bot termine - Thekentermine anzeigen<br/> \
+            @bot help - Diese Hilfe anzeigen <br/>"
+
+        return [MessageLine("alfabot", help_text, "gray", visible_to=[self.user.username])]
+
 class User(object):
     def __init__(self, username, color, number):
         self.username = username
@@ -146,6 +160,8 @@ class MessageParser(object):
             return AppointmentMessage(user, message_string)
         if message_string.startswith("@bot sms"):
             return SmsMessage(user, message_string)
+        if message_string.startswith("@bot help"):
+            return HelpMessage(user)
         if message_string.startswith("@bot announce"):
             return AnnouncementMessage(user, message_string)
         if any([message_string.startswith("@{0}".format(v[0])) for _, v in config.users.items()]):
