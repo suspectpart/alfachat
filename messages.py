@@ -1,9 +1,13 @@
 import alfachat as ac
 import config
+import inspect
 import os
+import sys
 
 
 class SmsMessage(object):
+    """@bot sms &lt;user&gt; &lt;text&gt; - SMS mit &lt;text&gt; an &lt;user&gt; versenden"""
+    
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
@@ -26,6 +30,8 @@ class SmsMessage(object):
 
 
 class TrumpMessage(object):
+    """@bot trump - Letzten Tweet von @realDonaldTrump anzeigen"""
+    
     def __init__(self, user, message_string):
         pass
 
@@ -39,6 +45,8 @@ class TrumpMessage(object):
 
         
 class AnnouncementMessage(object):
+    """@bot announce &lt;text&gt; - Öffentliche Kundmachung versenden"""
+    
     def __init__(self, user, message_string):
         self.user = user
         self.message_string = message_string
@@ -54,6 +62,8 @@ class AnnouncementMessage(object):
 
         
 class AppointmentMessage(object):
+    """@bot termine - Thekentermine anzeigen"""
+
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
@@ -67,6 +77,8 @@ class AppointmentMessage(object):
 
         
 class PrivateMessage(object):
+    """@&lt;user&gt; - Private Nachricht an @&lt;user&gt; senden"""
+
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
@@ -82,6 +94,8 @@ class PrivateMessage(object):
 
         
 class ShowsMessage(object):
+    """@bot shows - Liste aller anstehenden Shows"""
+    
     def __init__(self, user, message_string):
         pass
 
@@ -101,20 +115,20 @@ class ShowsMessage(object):
     def handles(message):
         return message.startswith("@bot shows")
         
-        
+    
 class HelpMessage(object):
+    """@bot help - Diese Hilfe anzeigen"""
+
     def __init__(self, user, message_string):
         self.user = user
 
     def lines(self):
-        help_text = "<b>Hilfe</b><br/><br/> \
-            @&lt;user&gt; - Private Nachricht an &lt;user&gt; schreiben <br/><br /> \
-            @bot announce &lt;text&gt; - Öffentliche Kundmachung versenden <br/> \
-            @bot sms &lt;user&gt; &lt;text&gt; - SMS mit &lt;text&gt; an &lt;user&gt; versenden <br/> \
-            @bot termine - Thekentermine anzeigen<br/> \
-            @bot trump - Letzten Tweet von @realDonaldTrump anzeigen<br/> \
-            @bot shows - Zeige nächste Konzerte<br/> \
-            @bot help - Diese Hilfe anzeigen <br/>"
+        help_text = "<b>Hilfe</b><br/><br/>"
+        
+        message_types = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+        
+        for message_type in message_types:
+            help_text += "{0}<br/>".format(message_type[1].__doc__)
 
         return [ac.MessageLine("alfabot", help_text, "gray", visible_to=[self.user.username])]
         
