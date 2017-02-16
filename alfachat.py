@@ -147,6 +147,23 @@ class PrivateMessage(object):
                             visible_to=[self.user.username, self.recipient.username])]
 
 
+class ShowsMessage(object):
+    def __init__(self):
+        pass
+
+    def lines(self):
+        if not os.path.isfile("shows.log"):
+            return [MessageLine("alfabot", "Keine Shows", "gray")]
+
+        all_shows = "<b>Shows</b><br/><br/>"
+
+        with open("shows.log", 'r') as shows:
+            for show in shows:
+                all_shows += "{0}<br/>".format(show)
+
+        return [MessageLine("alfabot", all_shows, "gray")]
+
+
 class HelpMessage(object):
     def __init__(self, user):
         self.user = user
@@ -158,9 +175,11 @@ class HelpMessage(object):
             @bot sms &lt;user&gt; &lt;text&gt; - SMS mit &lt;text&gt; an &lt;user&gt; versenden <br/> \
             @bot termine - Thekentermine anzeigen<br/> \
             @bot trump - Letzten Tweet von @realDonaldTrump anzeigen<br/> \
+            @bot shows - Zeige nächste Konzerte<br/> \
             @bot help - Diese Hilfe anzeigen <br/>"
 
         return [MessageLine("alfabot", help_text, "gray", visible_to=[self.user.username])]
+
 
 class User(object):
     def __init__(self, username, color, number):
@@ -184,6 +203,8 @@ class MessageParser(object):
             return HelpMessage(user)
         if message_string.startswith("@bot announce"):
             return AnnouncementMessage(user, message_string)
+        if message_string.startswith("@bot shows"):
+            return ShowsMessage()
         if any([message_string.startswith("@{0}".format(v[0])) for _, v in config.users.items()]):
             return PrivateMessage(user, message_string)
         return PlainTextMessage(user, message_string)
