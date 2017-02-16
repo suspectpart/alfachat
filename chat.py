@@ -25,7 +25,7 @@ def static_from_root():
 
 
 @app.route("/<token>", methods=['POST', 'GET'])
-def hello(token):
+def chat(token):
     try:
         user = ac.User(*config.users[uuid.UUID(token)])
     except:
@@ -47,8 +47,4 @@ def messages(user_id):
 
 
 if __name__ == "__main__":
-    while True:
-        try:
-            app.run(host='0.0.0.0', port=8080, use_reloader=False, threaded=True)
-        except:
-            pass
+    app.run(host='0.0.0.0', port=8080, use_reloader=False, threaded=True)
