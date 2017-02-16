@@ -3,8 +3,16 @@ import json
 import os
 import re
 import requests
+
+from bs4 import BeautifulSoup
 from datetime import datetime
 
+
+def get_latest_trump_tweet():
+    html = requests.get("http://twitter.com/realDonaldTrump").text
+    soup = BeautifulSoup(html, 'html.parser')
+    return soup.find('div', 'js-tweet-text-container').p.text
+    
 
 def send_sms_to(sms_config, number, text):
     url = "https://www.smsout.de/client/sendsms.php?Username={0}&Password={1}&SMSTo={2}&SMSType=V1&SMSText={3}"
@@ -90,6 +98,15 @@ class SmsMessage(object):
         return lines
 
 
+class TrumpMessage(object):
+    def __init__(self):
+        pass
+
+    def lines(self):
+        tweet = get_latest_trump_tweet()
+        return [MessageLine("trump", tweet, "orange")]
+
+
 class AnnouncementMessage(object):
     def __init__(self, user, message_string):
         self.user = user
@@ -140,6 +157,7 @@ class HelpMessage(object):
             @bot announce &lt;text&gt; - Öffentliche Kundmachung versenden <br/> \
             @bot sms &lt;user&gt; &lt;text&gt; - SMS mit &lt;text&gt; an &lt;user&gt; versenden <br/> \
             @bot termine - Thekentermine anzeigen<br/> \
+            @bot trump - Letzten Tweet von @realDonaldTrump anzeigen<br/> \
             @bot help - Diese Hilfe anzeigen <br/>"
 
         return [MessageLine("alfabot", help_text, "gray", visible_to=[self.user.username])]
@@ -158,6 +176,8 @@ class MessageParser(object):
     def parse(self, user, message_string):
         if message_string.startswith("@bot termine"):
             return AppointmentMessage(user, message_string)
+        if message_string.startswith("@bot trump"):
+            return TrumpMessage()
         if message_string.startswith("@bot sms"):
             return SmsMessage(user, message_string)
         if message_string.startswith("@bot help"):
