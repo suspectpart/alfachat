@@ -1,8 +1,11 @@
 import config
+import inspect
 import json
 import os
 import re
 import requests
+import sys
+import messages
 
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -79,54 +82,14 @@ class MessageLine(object):
     def __str__(self):
         return MessageEncoder().encode(self)
 
+        
+class User(object):
+    def __init__(self, username, color, number):
+        self.username = username
+        self.color = color
+        self.number = number
 
-class SmsMessage(object):
-    def __init__(self, user, message_string):
-        self.message_string = message_string
-        self.user = user
-        self.recipient = get_user_by_name(self.message_string.split()[2])
-
-    def lines(self):
-        lines = []
-
-        sms_text = self.message_string.split()[3:]
-
-        lines.append(MessageLine("alfabot", "SMS sent to {0}".format(self.recipient.username), "gray",
-                                 visible_to=[self.user.username, self.recipient.username]))
-        send_sms_to(config.sms_config, self.recipient.number, "[{0}] ".format(self.user.username) + " ".join(sms_text))
-
-        return lines
-
-
-class TrumpMessage(object):
-    def __init__(self):
-        pass
-
-    def lines(self):
-        tweet = get_latest_trump_tweet()
-        return [MessageLine("trump", tweet, "orange")]
-
-
-class AnnouncementMessage(object):
-    def __init__(self, user, message_string):
-        self.user = user
-        self.message_string = message_string
-
-    def lines(self):
-        announcement_text = " ".join(self.message_string.split()[2:])
-        message = "<b>++++Öffentliche Kundmachung++++</b> <br/><br/>{0}".format(announcement_text)
-        return [MessageLine("alfabot", message, "gray")]
-
-
-class AppointmentMessage(object):
-    def __init__(self, user, message_string):
-        self.message_string = message_string
-        self.user = user
-
-    def lines(self):
-        return [MessageLine("alfabot", get_appointments(), "gray")]
-
-
+        
 class PlainTextMessage(object):
     def __init__(self, user, message_string):
         self.message_string = message_string
@@ -135,57 +98,9 @@ class PlainTextMessage(object):
     def lines(self):
         return [MessageLine(self.user.username, self.message_string, self.user.color)]
 
-
-class PrivateMessage(object):
-    def __init__(self, user, message_string):
-        self.message_string = message_string
-        self.user = user
-        self.recipient = get_user_by_name(self.message_string.split()[0][1:])
-
-    def lines(self):
-        return [MessageLine(self.user.username, self.message_string, self.user.color,
-                            visible_to=[self.user.username, self.recipient.username])]
-
-
-class ShowsMessage(object):
-    def __init__(self):
-        pass
-
-    def lines(self):
-        if not os.path.isfile("shows.log"):
-            return [MessageLine("alfabot", "Keine Shows", "gray")]
-
-        all_shows = "<b>Shows</b><br/><br/>"
-
-        with open("shows.log", 'r') as shows:
-            for show in shows:
-                all_shows += "{0}<br/>".format(show)
-
-        return [MessageLine("alfabot", all_shows, "gray")]
-
-
-class HelpMessage(object):
-    def __init__(self, user):
-        self.user = user
-
-    def lines(self):
-        help_text = "<b>Hilfe</b><br/><br/> \
-            @&lt;user&gt; - Private Nachricht an &lt;user&gt; schreiben <br/><br /> \
-            @bot announce &lt;text&gt; - Öffentliche Kundmachung versenden <br/> \
-            @bot sms &lt;user&gt; &lt;text&gt; - SMS mit &lt;text&gt; an &lt;user&gt; versenden <br/> \
-            @bot termine - Thekentermine anzeigen<br/> \
-            @bot trump - Letzten Tweet von @realDonaldTrump anzeigen<br/> \
-            @bot shows - Zeige nächste Konzerte<br/> \
-            @bot help - Diese Hilfe anzeigen <br/>"
-
-        return [MessageLine("alfabot", help_text, "gray", visible_to=[self.user.username])]
-
-
-class User(object):
-    def __init__(self, username, color, number):
-        self.username = username
-        self.color = color
-        self.number = number
+    @staticmethod
+    def handles(message):
+        return True
 
 
 class MessageParser(object):
@@ -193,18 +108,12 @@ class MessageParser(object):
         pass
 
     def parse(self, user, message_string):
-        if message_string.startswith("@bot termine"):
-            return AppointmentMessage(user, message_string)
-        if message_string.startswith("@bot trump"):
-            return TrumpMessage()
-        if message_string.startswith("@bot sms"):
-            return SmsMessage(user, message_string)
-        if message_string.startswith("@bot help"):
-            return HelpMessage(user)
-        if message_string.startswith("@bot announce"):
-            return AnnouncementMessage(user, message_string)
-        if message_string.startswith("@bot shows"):
-            return ShowsMessage()
-        if any([message_string.startswith("@{0}".format(v[0])) for _, v in config.users.items()]):
-            return PrivateMessage(user, message_string)
+        message_types = inspect.getmembers(sys.modules[messages.__name__], inspect.isclass)
+        
+        for message_type in message_types:
+            class_ = message_type[1]
+            
+            if class_.handles(message_string):
+                return class_(user, message_string)
+                
         return PlainTextMessage(user, message_string)
