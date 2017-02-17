@@ -2,7 +2,9 @@ import alfachat as ac
 import config
 import inspect
 import os
+import requests
 import sys
+import bs4
 
 
 class SmsMessage(object):
@@ -36,7 +38,9 @@ class TrumpMessage(object):
         pass
 
     def lines(self):
-        tweet = ac.get_latest_trump_tweet()
+        html = requests.get("https://mobile.twitter.com/realDonaldTrump").text
+        soup = bs4.BeautifulSoup(html, 'html5lib')
+        tweet = soup.find('div', 'tweet-text').div.text.strip()
         return [ac.MessageLine("trump", tweet, "orange")]
 
     @staticmethod

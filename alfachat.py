@@ -7,15 +7,8 @@ import requests
 import sys
 import messages
 
-from bs4 import BeautifulSoup
 from datetime import datetime
 
-
-def get_latest_trump_tweet():
-    html = requests.get("http://twitter.com/realDonaldTrump").text
-    soup = BeautifulSoup(html, 'html.parser')
-    return soup.find('div', 'js-tweet-text-container').p.text
-    
 
 def send_sms_to(sms_config, number, text):
     url = "https://www.smsout.de/client/sendsms.php?Username={0}&Password={1}&SMSTo={2}&SMSType=V1&SMSText={3}"
