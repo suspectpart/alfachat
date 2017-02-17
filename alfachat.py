@@ -11,7 +11,12 @@ from datetime import datetime
 
 
 def send_sms_to(sms_config, number, text):
-    url = "https://www.smsout.de/client/sendsms.php?Username={0}&Password={1}&SMSTo={2}&SMSType=V1&SMSText={3}"
+    url = "https://www.smsout.de/client/sendsms.php\
+            ?Username={0}\
+            &Password={1}\
+            &SMSTo={2}&SMSType=V1\
+            &SMSText={3}"
+
     return requests.get(url.format(sms_config[0], sms_config[1], number, text))
 
 
@@ -61,7 +66,8 @@ class MessageEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, message)
 
     def decode(self, obj):
-        return MessageLine(obj["user"], obj["message"], obj["color"], obj["timestamp"], obj["visible_to"])
+        return MessageLine(obj["user"], obj["message"], obj["color"],
+                            obj["timestamp"], obj["visible_to"])
 
 
 class MessageLine(object):
