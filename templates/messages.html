@@ -8,7 +8,7 @@
 	<table>
 		<tbody>
 			{% for message in messages %}
-			{% if (not message.visible_to) or (user in message.visible_to) %}		
+			{% if (not message.visible_to) or (user.username in message.visible_to) %}		
 				<tr><td style="vertical-align: top; color:{{message.color}}; width: 120px;">[{{message.user}}]</td><td>{{message.message | safe}}</td></tr>
 			{% endif %}
 			{% endfor %}
