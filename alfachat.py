@@ -38,7 +38,7 @@ def read_chat():
 def get_user_by_name(name):
     for uuid, values in config.users.items():
         if values[0] == name:
-            return User(*values, uuid)
+            return User(*values, uuid=uuid)
     return None
 
 
