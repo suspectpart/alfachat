@@ -17,16 +17,25 @@ class SmsMessage(object):
         self.recipient = ac.get_user_by_name(self.message_string.split()[2])
 
     def lines(self):
-        lines = []
-
-        sms_text = self.message_string.split()[3:]
+        sms_text = " ".join(self.message_string.split()[3:])
+        sms_text = "[{0}] {1}".format(self.user.username, sms_text)
         message = "SMS sent to {0}".format(self.recipient.username)
-        lines.append(ac.MessageLine("alfabot", message, "gray",
-                                    visible_to=[self.user.username,
-                                                self.recipient.username]))
-        ac.send_sms_to(config.sms_config, self.recipient.number, "[{0}] ".format(self.user.username) + " ".join(sms_text))
 
-        return lines
+        self.send_sms_to(self.recipient.number, sms_text)
+
+        return [ac.MessageLine("alfabot", message, "gray",
+                                visible_to=[self.user.username,
+                                            self.recipient.username])]
+
+    def send_sms_to(self, number, text):
+        url = "https://www.smsout.de/client/sendsms.php"
+        query = "?Username={0}&Password={1}&SMSTo={2}&SMSType=V1&SMSText={3}"
+
+        user, password = config.sms_config
+
+        request_url = url + query.format(user, password, number, text)
+
+        return requests.get(request_url)
 
     @staticmethod
     def handles(message):
@@ -133,9 +142,9 @@ class HelpMessage(object):
     def lines(self):
         help_text = "<b>Hilfe</b><br/><br/>"
 
-        message_types = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+        messages = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 
-        for message_type in message_types:
+        for message_type in messages:
             help_text += "{0}<br/>".format(message_type[1].__doc__)
 
         return [ac.MessageLine("alfabot", help_text, "gray", visible_to=[self.user.username])]

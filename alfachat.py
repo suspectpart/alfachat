@@ -10,16 +10,6 @@ import messages
 from datetime import datetime
 
 
-def send_sms_to(sms_config, number, text):
-    url = "https://www.smsout.de/client/sendsms.php\
-            ?Username={0}\
-            &Password={1}\
-            &SMSTo={2}&SMSType=V1\
-            &SMSText={3}"
-
-    return requests.get(url.format(sms_config[0], sms_config[1], number, text))
-
-
 def write_chat(message_lines):
     with open("chat.log", 'a+') as f:
         for line in message_lines:
@@ -28,7 +18,7 @@ def write_chat(message_lines):
 
 def read_chat():
     pattern = re.compile(r'(https?:[\/\/|\\\\]+([\w\d:#@%\/;$()~_?\+-=\\\.&](#!)?)*)')
-
+    replacement = r'<a href="\g<1>" target="_blank">\g<1></a>'
     messages = []
 
     if not os.path.isfile("chat.log"):
@@ -38,9 +28,9 @@ def read_chat():
         log = f.read().split("\n")
         for line in log:
             if line.strip():
-                msg_json = MessageEncoder().decode(json.loads(line))
-                msg_json.message = re.sub(pattern, r'<a href="\g<1>" target="_blank">\g<1></a>', msg_json.message)
-                messages.append(msg_json)
+                msgjson = MessageEncoder().decode(json.loads(line))
+                msgjson.message = re.sub(pattern, replacement, msgjson.message)
+                messages.append(msgjson)
 
     return messages
 
