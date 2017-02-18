@@ -19,11 +19,9 @@ def static_from_root():
 
 @app.route("/<token>", methods=['POST', 'GET'])
 def chat(token):
-    user_uuid = None
-
     try:
         user_uuid = uuid.UUID(token)
-        user = ac.User(*config.users[user_uuid])
+        user = ac.User(*config.users[user_uuid], user_uuid)
     except:
         return abort(404)
 
@@ -32,11 +30,12 @@ def chat(token):
         message = ac.MessageParser().parse(user, escape(message_string))
         ac.write_chat(message.lines())
 
-    return render_template('alfachat.html', user=user, user_id=user_uuid)
+    return render_template('alfachat.html', user=user)
 
 
 @app.route("/messages/<user_id>")
 def messages(user_id):
-    user = ac.User(*config.users[uuid.UUID(user_id)])
+    user_uuid = uuid.UUID(user_id)
+    user = ac.User(*config.users[user_uuid], user_uuid)
 
     return render_template('messages.html', messages=ac.read_chat(), user=user)

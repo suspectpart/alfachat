@@ -22,7 +22,7 @@ class SmsMessage(object):
         message = "SMS sent to {0}".format(self.recipient.username)
 
         self.send_sms_to(self.recipient.number, sms_text)
-
+        
         return [ac.MessageLine("alfabot", message, "gray",
                                 visible_to=[self.user.username,
                                             self.recipient.username])]
@@ -34,7 +34,7 @@ class SmsMessage(object):
         user, password = config.sms_config
 
         request_url = url + query.format(user, password, number, text)
-
+        print(request_url)
         return requests.get(request_url)
 
     @staticmethod
@@ -85,7 +85,15 @@ class AppointmentMessage(object):
         self.user = user
 
     def lines(self):
-        return [ac.MessageLine("alfabot", ac.get_appointments(), "gray")]
+        return [ac.MessageLine("alfabot", self.get_appointments(), "gray")]
+
+    def get_appointments(self):
+        if os.path.isfile(config.appointments_path):
+            with open(config.appointments_path, 'r') as f:
+                return f.read().replace("\n", "   ")
+        else:
+            return "Keine Termine."
+
 
     @staticmethod
     def handles(message):

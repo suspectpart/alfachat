@@ -36,15 +36,10 @@ def read_chat():
 
 
 def get_user_by_name(name):
-    return User(*(list(filter(lambda u: u[0] == name, config.users.values()))[0]))
-
-
-def get_appointments():
-    if os.path.isfile(config.appointments_path):
-        with open(config.appointments_path, 'r') as f:
-            return f.read().replace("\n", "   ")
-    else:
-        return "Keine Termine."
+    for uuid, values in config.users.items():
+        if values[0] == name:
+            return User(*values, uuid)
+    return None
 
 
 class MessageEncoder(json.JSONEncoder):
@@ -73,10 +68,11 @@ class MessageLine(object):
 
         
 class User(object):
-    def __init__(self, username, color, number):
+    def __init__(self, username, color, number, uuid):
         self.username = username
         self.color = color
         self.number = number
+        self.uuid = uuid
 
         
 class PlainTextMessage(object):

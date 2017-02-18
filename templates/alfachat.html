@@ -10,7 +10,7 @@
 	<body style="font-family: Courier New">
 		<div style="position: absolute; width: 95%; height: 85%; " >
 			<h1 style="position: relative;">Willkommen im Alfachat, {{user.username}}!</h1>
-			<iframe src="messages/{{user_id}}#bottom" style="position: relative; border: 0px; overflow:scroll; width: 95%; height: 75%; top: 10px;" charset="utf-8"></iframe>
+			<iframe src="messages/{{user.uuid}}#bottom" style="position: relative; border: 0px; overflow:scroll; width: 95%; height: 75%; top: 10px;" charset="utf-8"></iframe>
 			<form style="position: relative; top: 50px;" method="post">
 				<span>Message: &nbsp;</span><input type="text" name="message" style="width:75%" autofocus />
 				<input type="submit" value="go!" />
