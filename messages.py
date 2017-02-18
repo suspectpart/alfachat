@@ -134,7 +134,7 @@ class ShowsMessage(object):
 
 
 class AddShowMessage(object):
-    """@bot addshow - Neue Show hinzufügen (dd.mm.yyyy bands datum location)"""
+    """@bot addshow - Neue Show hinzufügen (dd.mm.yyyy bands location)"""
 
     def __init__(self, user, message_string):
         self.show = " ".join(message_string.split()[2:])
