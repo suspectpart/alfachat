@@ -1,0 +1,12 @@
+[Unit]
+Description=uWSGI instance to serve alfachat
+After=network.target
+
+[Service]
+User=pi
+Group=www-data
+WorkingDirectory=/var/www/alfachat
+ExecStart=/usr/local/bin/uwsgi --ini conf/alfachat.ini
+
+[Install]
+WantedBy=multi-user.target
