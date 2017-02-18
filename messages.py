@@ -114,11 +114,11 @@ class ShowsMessage(object):
     """@bot shows - Liste aller anstehenden Shows"""
 
     def __init__(self, user, message_string):
-        pass
+        self.user = user
 
     def lines(self):
         if not os.path.isfile("shows.log"):
-            return [ac.MessageLine("alfabot", "Keine Shows", "gray")]
+            return [ac.MessageLine("alfabot", "Keine Shows", "gray", visible_to=[self.user.username])]
 
         all_shows = "<b>Shows</b><br/><br/>"
 
@@ -126,7 +126,7 @@ class ShowsMessage(object):
             for show in shows:
                 all_shows += "{0}<br/>".format(show)
 
-        return [ac.MessageLine("alfabot", all_shows, "gray")]
+        return [ac.MessageLine("alfabot", all_shows, "gray", visible_to=[self.user.username])]
 
     @staticmethod
     def handles(message):
@@ -139,12 +139,13 @@ class AddShowMessage(object):
     def __init__(self, user, message_string):
         self.show = " ".join(message_string.split()[2:])
         self.message = "Show added: {0}".format(self.show)
+        self.user = user
 
     def lines(self):
         with open("shows.log", 'a+') as shows:
             shows.write(self.show + "\n")
 
-        return [ac.MessageLine("alfabot", self.message, "gray")]
+        return [ac.MessageLine("alfabot", self.message, "gray", visible_to=[self.user.username])]
 
     @staticmethod
     def handles(message):
