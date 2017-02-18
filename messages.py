@@ -133,6 +133,24 @@ class ShowsMessage(object):
         return message.startswith("@bot shows")
 
 
+class AddShowMessage(object):
+    """@bot addshow - Neue Show hinzufügen (dd.mm.yyyy bands datum location)"""
+
+    def __init__(self, user, message_string):
+        self.show = " ".join(message_string.split()[2:])
+        self.message = "Show added: {0}".format(self.show)
+
+    def lines(self):
+        with open("shows.log", 'a+') as shows:
+            shows.write(self.show + "\n")
+
+        return [ac.MessageLine("alfabot", self.message, "gray")]
+
+    @staticmethod
+    def handles(message):
+        return message.startswith("@bot addshow")
+
+
 class HelpMessage(object):
     """@bot help - Diese Hilfe anzeigen"""
 
