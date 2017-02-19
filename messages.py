@@ -22,9 +22,8 @@ class SmsMessage(object):
         message = "SMS sent to {0}".format(self.recipient.username)
 
         self.send_sms_to(self.recipient.number, sms_text)
-        
-        return [ac.MessageLine("alfabot", message, "gray",
-                                visible_to=[self.user.username,
+
+        return [ac.MessageLine(ac.Bot(), message, visible_to=[self.user.username,
                                             self.recipient.username])]
 
     def send_sms_to(self, number, text):
@@ -46,13 +45,13 @@ class TrumpMessage(object):
     """@bot trump - Letzten Tweet von @realDonaldTrump anzeigen"""
 
     def __init__(self, user, message_string):
-        pass
+        self.trump = ac.User("trump", "orange", "", None) 
 
     def lines(self):
         html = requests.get("https://mobile.twitter.com/realDonaldTrump").text
         soup = bs4.BeautifulSoup(html, 'html5lib')
         tweet = soup.find('div', 'tweet-text').div.text.strip()
-        return [ac.MessageLine("trump", tweet, "orange")]
+        return [ac.MessageLine(self.trump, tweet)]
 
     @staticmethod
     def handles(message):
@@ -70,7 +69,7 @@ class AnnouncementMessage(object):
     def lines(self):
         announcement_text = " ".join(self.message_string.split()[2:])
         message = self.text.format(announcement_text)
-        return [ac.MessageLine("alfabot", message, "gray")]
+        return [ac.MessageLine(ac.Bot(), message)]
 
     @staticmethod
     def handles(message):
@@ -85,7 +84,7 @@ class AppointmentMessage(object):
         self.user = user
 
     def lines(self):
-        return [ac.MessageLine("alfabot", self.get_appointments(), "gray")]
+        return [ac.MessageLine(ac.Bot(), self.get_appointments())]
 
     def get_appointments(self):
         if os.path.isfile(config.appointments_path):
@@ -109,8 +108,7 @@ class PrivateMessage(object):
         self.recipient = ac.get_user_by_name(self.message_string.split()[0][1:])
 
     def lines(self):
-        return [ac.MessageLine(self.user.username, self.message_string,
-                self.user.color,
+        return [ac.MessageLine(self.user, self.message_string,
                 visible_to=[self.user.username, self.recipient.username])]
 
     @staticmethod
@@ -126,7 +124,7 @@ class ShowsMessage(object):
 
     def lines(self):
         if not os.path.isfile("shows.log"):
-            return [ac.MessageLine("alfabot", "Keine Shows", "gray", visible_to=[self.user.username])]
+            return [ac.MessageLine(ac.Bot(), "Keine Shows", visible_to=[self.user.username])]
 
         all_shows = "<b>Shows</b><br/><br/>"
 
@@ -134,7 +132,7 @@ class ShowsMessage(object):
             for show in shows:
                 all_shows += "{0}<br/>".format(show)
 
-        return [ac.MessageLine("alfabot", all_shows, "gray", visible_to=[self.user.username])]
+        return [ac.MessageLine(ac.Bot(), all_shows, visible_to=[self.user.username])]
 
     @staticmethod
     def handles(message):
@@ -153,7 +151,7 @@ class AddShowMessage(object):
         with open("shows.log", 'a+') as shows:
             shows.write(self.show + "\n")
 
-        return [ac.MessageLine("alfabot", self.message, "gray", visible_to=[self.user.username])]
+        return [ac.MessageLine(ac.Bot(), self.message, visible_to=[self.user.username])]
 
     @staticmethod
     def handles(message):
@@ -174,7 +172,7 @@ class HelpMessage(object):
         for message_type in messages:
             help_text += "{0}<br/>".format(message_type[1].__doc__)
 
-        return [ac.MessageLine("alfabot", help_text, "gray", visible_to=[self.user.username])]
+        return [ac.MessageLine(ac.Bot(), help_text, visible_to=[self.user.username])]
 
     @staticmethod
     def handles(message):

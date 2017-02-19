@@ -53,16 +53,17 @@ class MessageEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, message)
 
     def decode(self, obj):
-        return MessageLine(
-                obj["user"], obj["message"], obj["color"],
-                obj["timestamp"], obj["visible_to"])
+        user = get_user_by_name(obj["user"])
+        if not user:
+            user = User(obj["user"], obj["color"], "", None)
+        return MessageLine(user, obj["message"], obj["timestamp"], obj["visible_to"])
 
 
 class MessageLine(object):
-    def __init__(self, user, message, color, timestamp=None, visible_to=None):
-        self.user = user
+    def __init__(self, user, message, timestamp=None, visible_to=None):
+        self.user = user.username
+        self.color = user.color
         self.message = message
-        self.color = color
         self.timestamp = timestamp if timestamp else datetime.now()
         self.visible_to = visible_to if visible_to else []
 
@@ -78,13 +79,21 @@ class User(object):
         self.uuid = uuid
 
 
+class Bot(User):
+    def __init__(self):
+        self.username = "alfabot"
+        self.color = "gray"
+        self.number = ""
+        self.uuid = None
+
+
 class PlainTextMessage(object):
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
 
     def lines(self):
-        return [MessageLine(self.user.username, self.message_string, self.user.color)]
+        return [MessageLine(self.user, self.message_string)]
 
     @staticmethod
     def handles(message):
@@ -97,11 +106,11 @@ class MessageParser(object):
 
     def parse(self, user, message_string):
         message_types = inspect.getmembers(sys.modules[messages.__name__], inspect.isclass)
-        
+
         for message_type in message_types:
             class_ = message_type[1]
-            
+
             if class_.handles(message_string):
                 return class_(user, message_string)
-                
+
         return PlainTextMessage(user, message_string)
