@@ -39,3 +39,7 @@ def messages(user_id):
     user = ac.User(*config.users[user_uuid], uuid=user_uuid)
 
     return render_template('messages.html', messages=ac.read_chat(), user=user)
+
+
+if __name__ == "__main__":
+    app.run(host = "0.0.0.0", port = 8080)
