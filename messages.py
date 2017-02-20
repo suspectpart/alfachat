@@ -7,6 +7,8 @@ import requests
 import sys
 import bs4
 
+from datetime import datetime
+
 
 class SmsMessage(object):
 
@@ -157,10 +159,21 @@ class AddShowMessage(object):
         self.user = user
 
     def execute(self):
+        if not self.parse_showdate():
+            error_msg = "Invalid date format (must be dd.mm.yyyy)"
+            chat.write(chat.Bot(), error_msg, visible_to=[self.user.username])
+            return
+
         with open("shows.log", 'a+') as shows:
             shows.write(self.show + "\n")
 
         chat.write(chat.Bot(), self.message, visible_to=[self.user.username])
+
+    def parse_showdate(self):
+        try:
+            return datetime.strptime(self.show.split()[0], '%d.%m.%Y')
+        except:
+            return None
 
     @staticmethod
     def handles(message):
