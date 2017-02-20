@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
 import chat
-import config
-import messages
-import uuid
-from flask import abort
-from flask import escape
-from flask import Flask
-from flask import request
+from flask import abort, escape, Flask, request
 from flask import render_template
 from flask import send_from_directory
 
@@ -23,7 +17,7 @@ def token(user_id):
     user = chat.get_user_by_uuid(user_id) or abort(404)
 
     if request.method == 'POST':
-        chat.handle(user, request.form['message'])
+        chat.handle(user, escape(request.form['message']))
 
     return render_template('alfachat.html', user=user)
 

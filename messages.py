@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import chat
 import config
-import inspect
 import os
 import requests
-import sys
 import bs4
 
 from datetime import datetime as dt
@@ -153,20 +151,30 @@ class ShowsMessage(PlainTextMessage):
         all_shows = []
 
         with open("shows.log", 'r') as shows:
-            for show in shows:
-                all_shows.append(show.strip())
+            all_shows = [Show(s) for s in shows]
 
-        all_shows = filter(
-            lambda x: dt.strptime(x.split()[0], '%d.%m.%Y') >= dt.today(), all_shows)
-        all_shows = sorted(
-            all_shows, key=lambda x: dt.strptime(x.split()[0], '%d.%m.%Y'))
-
+        all_shows = filter(lambda show: show.lies_in_past(), all_shows)
+        all_shows = sorted(all_shows, key=lambda show: show.date)
+        all_shows = [str(show) for show in all_shows]
         all_shows = "<b>Shows</b><br/><br/>" + "<br/>".join(all_shows)
+
         chat.write(chat.bot, all_shows, visible_to=[self.user.username])
 
     @staticmethod
     def handles(message):
         return message.startswith("@bot shows")
+
+
+class Show(object):
+    def __init__(self, show_str):
+        self.show_str = show_str.strip()
+        self.date = dt.strptime(self.show_str.split()[0], '%d.%m.%Y')
+
+    def lies_in_past(self):
+        return self.date >= dt.today()
+
+    def __str__(self):
+        return self.show_str
 
 
 class AddShowMessage(PlainTextMessage):
