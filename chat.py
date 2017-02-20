@@ -38,9 +38,9 @@ def read():
 
 
 def get_user_by_name(name):
-    for uuid, values in config.users.items():
+    for user_id, values in config.users.items():
         if values[0] == name:
-            return User(*values, uuid=uuid)
+            return User(*values, uuid=user_id)
     return None
 
 
@@ -81,9 +81,12 @@ class MessageEncoder(json.JSONEncoder):
 
     def decode(self, obj):
         user = get_user_by_name(obj["user"])
+
         if not user:
             user = User(obj["user"], obj["color"], "", None)
-        return MessageLine(user, obj["message"], obj["timestamp"], obj["visible_to"])
+
+        return MessageLine(
+                user, obj["message"], obj["timestamp"], obj["visible_to"])
 
 
 class MessageLine(object):
