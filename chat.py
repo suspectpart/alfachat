@@ -10,13 +10,15 @@ import messages
 from datetime import datetime
 
 
-def write(message_line):
+def write(user, message, visible_to=None):
+    line = MessageLine(user, message, visible_to=visible_to)
     with open("chat.log", 'a+') as f:
-        f.write(str(message_line) + "\n")
+        f.write(str(line) + "\n")
 
 
 def read():
-    pattern = re.compile(r"(https?:[\/\/|\\\\]+([\w\d:#@%\/;$()~_?\+-=\\\.&](#!)?)*)")
+    pattern = re.compile(
+        r"(https?:[\/\/|\\\\]+([\w\d:#@%\/;$()~_?\+-=\\\.&](#!)?)*)")
     replacement = r'<a href="\g<1>" target="_blank">\g<1></a>'
     messages = []
 
@@ -42,6 +44,7 @@ def get_user_by_name(name):
 
 
 class MessageEncoder(json.JSONEncoder):
+
     def default(self, message):
         if isinstance(message, MessageLine):
             return {"user": message.user,
@@ -60,18 +63,20 @@ class MessageEncoder(json.JSONEncoder):
 
 
 class MessageLine(object):
+
     def __init__(self, user, message, timestamp=None, visible_to=None):
         self.user = user.username
         self.color = user.color
         self.message = message
         self.timestamp = timestamp if timestamp else datetime.now()
-        self.visible_to = visible_to if visible_to else []
+        self.visible_to = visible_to or []
 
     def __str__(self):
         return MessageEncoder().encode(self)
 
 
 class User(object):
+
     def __init__(self, username, color, number, uuid):
         self.username = username
         self.color = color
@@ -80,6 +85,7 @@ class User(object):
 
 
 class Bot(User):
+
     def __init__(self):
         self.username = "alfabot"
         self.color = "gray"
@@ -88,12 +94,13 @@ class Bot(User):
 
 
 class PlainTextMessage(object):
+
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
 
     def execute(self):
-        write(MessageLine(self.user, self.message_string))
+        write(self.user, self.message_string)
 
     @staticmethod
     def handles(message):
@@ -101,11 +108,13 @@ class PlainTextMessage(object):
 
 
 class MessageParser(object):
+
     def __init__(self):
         pass
 
     def parse(self, user, message_string):
-        message_types = inspect.getmembers(sys.modules[messages.__name__], inspect.isclass)
+        message_types = inspect.getmembers(
+            sys.modules[messages.__name__], inspect.isclass)
 
         for message_type in message_types:
             class_ = message_type[1]

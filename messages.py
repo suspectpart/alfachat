@@ -9,6 +9,7 @@ import bs4
 
 
 class SmsMessage(object):
+
     """@bot sms &lt;user&gt; &lt;text&gt;
     - SMS mit &lt;text&gt; an &lt;user&gt; versenden"""
 
@@ -23,8 +24,8 @@ class SmsMessage(object):
         message = "SMS sent to {0}".format(self.recipient.username)
 
         self.send_sms_to(self.recipient.number, sms_text)
-        line = chat.MessageLine(chat.Bot(), message, visible_to=[self.user.username, self.recipient.username])
-        chat.write(line)
+        chat.write(chat.Bot(), message, visible_to=[
+                   self.user.username, self.recipient.username])
 
     def send_sms_to(self, number, text):
         url = "https://www.smsout.de/client/sendsms.php"
@@ -42,16 +43,17 @@ class SmsMessage(object):
 
 
 class TrumpMessage(object):
+
     """@bot trump - Letzten Tweet von @realDonaldTrump anzeigen"""
 
     def __init__(self, user, message_string):
-        self.trump = chat.User("trump", "orange", "", None) 
+        self.trump = chat.User("trump", "orange", "", None)
 
     def execute(self):
         html = requests.get("https://mobile.twitter.com/realDonaldTrump").text
         soup = bs4.BeautifulSoup(html, 'html5lib')
         tweet = soup.find('div', 'tweet-text').div.text.strip()
-        chat.write(chat.MessageLine(self.trump, tweet))
+        chat.write(self.trump, tweet)
 
     @staticmethod
     def handles(message):
@@ -59,6 +61,7 @@ class TrumpMessage(object):
 
 
 class AnnouncementMessage(object):
+
     """@bot announce &lt;text&gt; - Öffentliche Kundmachung versenden"""
 
     def __init__(self, user, message_string):
@@ -69,7 +72,7 @@ class AnnouncementMessage(object):
     def execute(self):
         announcement_text = " ".join(self.message_string.split()[2:])
         message = self.text.format(announcement_text)
-        chat.write(chat.MessageLine(chat.Bot(), message))
+        chat.write(chat.Bot(), message)
 
     @staticmethod
     def handles(message):
@@ -77,6 +80,7 @@ class AnnouncementMessage(object):
 
 
 class AppointmentMessage(object):
+
     """@bot termine - Thekentermine anzeigen"""
 
     def __init__(self, user, message_string):
@@ -84,7 +88,7 @@ class AppointmentMessage(object):
         self.user = user
 
     def execute(self):
-        chat.write(chat.MessageLine(chat.Bot(), self.get_appointments()))
+        chat.write(chat.Bot(), self.get_appointments())
 
     def get_appointments(self):
         if os.path.isfile(config.appointments_path):
@@ -93,23 +97,24 @@ class AppointmentMessage(object):
         else:
             return "Keine Termine."
 
-
     @staticmethod
     def handles(message):
         return message.startswith("@bot termine")
 
 
 class PrivateMessage(object):
+
     """@&lt;user&gt; - Private Nachricht an @&lt;user&gt; senden"""
 
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
-        self.recipient = chat.get_user_by_name(self.message_string.split()[0][1:])
+        self.recipient = chat.get_user_by_name(
+            self.message_string.split()[0][1:])
 
     def execute(self):
-        chat.write(chat.MessageLine(self.user, self.message_string,
-                visible_to=[self.user.username, self.recipient.username]))
+        chat.write(self.user, self.message_string, visible_to=[
+                   self.user.username, self.recipient.username])
 
     @staticmethod
     def handles(message):
@@ -117,6 +122,7 @@ class PrivateMessage(object):
 
 
 class ShowsMessage(object):
+
     """@bot shows - Liste aller anstehenden Shows"""
 
     def __init__(self, user, message_string):
@@ -124,7 +130,8 @@ class ShowsMessage(object):
 
     def execute(self):
         if not os.path.isfile("shows.log"):
-            chat.write(chat.MessageLine(chat.Bot(), "Keine Shows", visible_to=[self.user.username]))
+            chat.write(
+                chat.Bot(), "Keine Shows", visible_to=[self.user.username])
             return
 
         all_shows = "<b>Shows</b><br/><br/>"
@@ -133,7 +140,7 @@ class ShowsMessage(object):
             for show in shows:
                 all_shows += "{0}<br/>".format(show)
 
-        chat.write(chat.MessageLine(chat.Bot(), all_shows, visible_to=[self.user.username]))
+        chat.write(chat.Bot(), all_shows, visible_to=[self.user.username])
 
     @staticmethod
     def handles(message):
@@ -141,6 +148,7 @@ class ShowsMessage(object):
 
 
 class AddShowMessage(object):
+
     """@bot addshow - Neue Show hinzufügen (dd.mm.yyyy bands location)"""
 
     def __init__(self, user, message_string):
@@ -152,7 +160,7 @@ class AddShowMessage(object):
         with open("shows.log", 'a+') as shows:
             shows.write(self.show + "\n")
 
-        chat.write(chat.MessageLine(chat.Bot(), self.message, visible_to=[self.user.username]))
+        chat.write(chat.Bot(), self.message, visible_to=[self.user.username])
 
     @staticmethod
     def handles(message):
@@ -160,6 +168,7 @@ class AddShowMessage(object):
 
 
 class HelpMessage(object):
+
     """@bot help - Diese Hilfe anzeigen"""
 
     def __init__(self, user, message_string):
@@ -173,7 +182,7 @@ class HelpMessage(object):
         for message_type in messages:
             help_text += "{0}<br/>".format(message_type[1].__doc__)
 
-        chat.write(chat.MessageLine(chat.Bot(), help_text, visible_to=[self.user.username]))
+        chat.write(chat.Bot(), help_text, visible_to=[self.user.username])
 
     @staticmethod
     def handles(message):
