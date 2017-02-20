@@ -7,7 +7,7 @@ import requests
 import sys
 import bs4
 
-from datetime import datetime
+from datetime import datetime as dt
 
 
 class SmsMessage(object):
@@ -136,12 +136,18 @@ class ShowsMessage(object):
                 chat.Bot(), "Keine Shows", visible_to=[self.user.username])
             return
 
-        all_shows = "<b>Shows</b><br/><br/>"
+        all_shows = []
 
         with open("shows.log", 'r') as shows:
             for show in shows:
-                all_shows += "{0}<br/>".format(show)
+                all_shows.append(show.strip())
 
+        all_shows = filter(
+            lambda x: dt.strptime(x.split()[0], '%d.%m.%Y') >= dt.today(), all_shows)
+        all_shows = sorted(
+            all_shows, key=lambda x: dt.strptime(x.split()[0], '%d.%m.%Y'))
+
+        all_shows = "<b>Shows</b><br/><br/>" + "<br/>".join(all_shows)
         chat.write(chat.Bot(), all_shows, visible_to=[self.user.username])
 
     @staticmethod
@@ -171,7 +177,7 @@ class AddShowMessage(object):
 
     def parse_showdate(self):
         try:
-            return datetime.strptime(self.show.split()[0], '%d.%m.%Y')
+            return dt.strptime(self.show.split()[0], '%d.%m.%Y')
         except:
             return None
 
