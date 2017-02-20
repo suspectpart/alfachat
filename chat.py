@@ -2,10 +2,11 @@
 import config
 import inspect
 import json
+import messages
 import os
 import re
 import sys
-import messages
+import uuid
 
 from datetime import datetime
 
@@ -41,6 +42,15 @@ def get_user_by_name(name):
         if values[0] == name:
             return User(*values, uuid=uuid)
     return None
+
+
+def get_user_by_uuid(uuid_str):
+    user_uuid = uuid.UUID(uuid_str)
+
+    try:
+        return User(*config.users[user_uuid], uuid=user_uuid)
+    except:
+        return None
 
 
 class MessageEncoder(json.JSONEncoder):
@@ -93,20 +103,6 @@ class Bot(User):
         self.uuid = None
 
 
-class PlainTextMessage(object):
-
-    def __init__(self, user, message_string):
-        self.message_string = message_string
-        self.user = user
-
-    def execute(self):
-        write(self.user, self.message_string)
-
-    @staticmethod
-    def handles(message):
-        return False
-
-
 class MessageParser(object):
 
     def __init__(self):
@@ -116,10 +112,13 @@ class MessageParser(object):
         message_types = inspect.getmembers(
             sys.modules[messages.__name__], inspect.isclass)
 
+        message_types = filter(
+            lambda mt: issubclass(mt[1], messages.PlainTextMessage), message_types)
+
         for message_type in message_types:
             class_ = message_type[1]
 
             if class_.handles(message_string):
                 return class_(user, message_string)
 
-        return PlainTextMessage(user, message_string)
+        return messages.PlainTextMessage(user, message_string)

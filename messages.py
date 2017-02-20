@@ -10,7 +10,21 @@ import bs4
 from datetime import datetime as dt
 
 
-class SmsMessage(object):
+class PlainTextMessage(object):
+
+    def __init__(self, user, message_string):
+        self.message_string = message_string
+        self.user = user
+
+    def execute(self):
+        chat.write(self.user, self.message_string)
+
+    @staticmethod
+    def handles(message):
+        return False
+
+
+class SmsMessage(PlainTextMessage):
 
     """@bot sms &lt;user&gt; &lt;text&gt;
     - SMS mit &lt;text&gt; an &lt;user&gt; versenden"""
@@ -44,7 +58,7 @@ class SmsMessage(object):
         return message.startswith("@bot sms")
 
 
-class TrumpMessage(object):
+class TrumpMessage(PlainTextMessage):
 
     """@bot trump - Letzten Tweet von @realDonaldTrump anzeigen"""
 
@@ -62,7 +76,7 @@ class TrumpMessage(object):
         return message.startswith("@bot trump")
 
 
-class AnnouncementMessage(object):
+class AnnouncementMessage(PlainTextMessage):
 
     """@bot announce &lt;text&gt; - Öffentliche Kundmachung versenden"""
 
@@ -81,7 +95,7 @@ class AnnouncementMessage(object):
         return message.startswith("@bot announce")
 
 
-class AppointmentMessage(object):
+class AppointmentMessage(PlainTextMessage):
 
     """@bot termine - Thekentermine anzeigen"""
 
@@ -104,7 +118,7 @@ class AppointmentMessage(object):
         return message.startswith("@bot termine")
 
 
-class PrivateMessage(object):
+class PrivateMessage(PlainTextMessage):
 
     """@&lt;user&gt; - Private Nachricht an @&lt;user&gt; senden"""
 
@@ -123,7 +137,7 @@ class PrivateMessage(object):
         return any([message.startswith("@{0}".format(v[0])) for _, v in config.users.items()])
 
 
-class ShowsMessage(object):
+class ShowsMessage(PlainTextMessage):
 
     """@bot shows - Liste aller anstehenden Shows"""
 
@@ -155,7 +169,7 @@ class ShowsMessage(object):
         return message.startswith("@bot shows")
 
 
-class AddShowMessage(object):
+class AddShowMessage(PlainTextMessage):
 
     """@bot addshow - Neue Show hinzufügen (dd.mm.yyyy bands location)"""
 
@@ -186,7 +200,7 @@ class AddShowMessage(object):
         return message.startswith("@bot addshow")
 
 
-class HelpMessage(object):
+class HelpMessage(PlainTextMessage):
 
     """@bot help - Diese Hilfe anzeigen"""
 
@@ -197,9 +211,12 @@ class HelpMessage(object):
         help_text = "<b>Hilfe</b><br/><br/>"
 
         messages = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+        messages = filter(
+            lambda mt: issubclass(mt[1], PlainTextMessage), messages)
 
         for message_type in messages:
-            help_text += "{0}<br/>".format(message_type[1].__doc__)
+            if message_type[1].__doc__:
+                help_text += "{0}<br/>".format(message_type[1].__doc__)
 
         chat.write(chat.Bot(), help_text, visible_to=[self.user.username])
 
