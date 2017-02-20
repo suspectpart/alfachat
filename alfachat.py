@@ -1,116 +1,45 @@
+# -*- coding: utf-8 -*-
+import chat
 import config
-import inspect
-import json
-import os
-import re
-import sys
-import messages
+import uuid
+from flask import abort
+from flask import escape
+from flask import Flask
+from flask import request
+from flask import render_template
+from flask import send_from_directory
 
-from datetime import datetime
-
-
-def write_chat(message_lines):
-    with open("chat.log", 'a+') as f:
-        for line in message_lines:
-            f.write(str(line) + "\n")
+app = Flask(__name__, static_folder='static', static_url_path='')
 
 
-def read_chat():
-    pattern = re.compile(r"(https?:[\/\/|\\\\]+([\w\d:#@%\/;$()~_?\+-=\\\.&](#!)?)*)")
-    replacement = r'<a href="\g<1>" target="_blank">\g<1></a>'
-    messages = []
-
-    if not os.path.isfile("chat.log"):
-        return []
-
-    with open("chat.log", "r") as f:
-        log = f.read().split("\n")
-        for line in log:
-            if line.strip():
-                msgjson = MessageEncoder().decode(json.loads(line))
-                msgjson.message = re.sub(pattern, replacement, msgjson.message)
-                messages.append(msgjson)
-
-    return messages
+@app.route('/robots.txt')
+def static_from_root():
+    return send_from_directory(app.static_folder, request.path[1:])
 
 
-def get_user_by_name(name):
-    for uuid, values in config.users.items():
-        if values[0] == name:
-            return User(*values, uuid=uuid)
-    return None
+@app.route("/<token>", methods = ['POST', 'GET'])
+def token(token):
+    try:
+        user_uuid = uuid.UUID(token)
+        user = chat.User(*config.users[user_uuid], uuid = user_uuid)
+    except:
+        return abort(404)
+
+    if request.method == 'POST':
+        message_string = request.form['message']
+        message = chat.MessageParser().parse(user, escape(message_string))
+        message.execute()
+
+    return render_template('alfachat.html', user = user)
 
 
-class MessageEncoder(json.JSONEncoder):
-    def default(self, message):
-        if isinstance(message, MessageLine):
-            return {"user": message.user,
-                    "message": message.message,
-                    "color": message.color,
-                    "timestamp": str(message.timestamp),
-                    "visible_to": message.visible_to}
+@app.route("/messages/<user_id>")
+def messages(user_id):
+    user_uuid = uuid.UUID(user_id)
+    user = chat.User(*config.users[user_uuid], uuid = user_uuid)
 
-        return json.JSONEncoder.default(self, message)
-
-    def decode(self, obj):
-        user = get_user_by_name(obj["user"])
-        if not user:
-            user = User(obj["user"], obj["color"], "", None)
-        return MessageLine(user, obj["message"], obj["timestamp"], obj["visible_to"])
+    return render_template('messages.html', messages = chat.read(), user = user)
 
 
-class MessageLine(object):
-    def __init__(self, user, message, timestamp=None, visible_to=None):
-        self.user = user.username
-        self.color = user.color
-        self.message = message
-        self.timestamp = timestamp if timestamp else datetime.now()
-        self.visible_to = visible_to if visible_to else []
-
-    def __str__(self):
-        return MessageEncoder().encode(self)
-
-
-class User(object):
-    def __init__(self, username, color, number, uuid):
-        self.username = username
-        self.color = color
-        self.number = number
-        self.uuid = uuid
-
-
-class Bot(User):
-    def __init__(self):
-        self.username = "alfabot"
-        self.color = "gray"
-        self.number = ""
-        self.uuid = None
-
-
-class PlainTextMessage(object):
-    def __init__(self, user, message_string):
-        self.message_string = message_string
-        self.user = user
-
-    def lines(self):
-        return [MessageLine(self.user, self.message_string)]
-
-    @staticmethod
-    def handles(message):
-        return True
-
-
-class MessageParser(object):
-    def __init__(self):
-        pass
-
-    def parse(self, user, message_string):
-        message_types = inspect.getmembers(sys.modules[messages.__name__], inspect.isclass)
-
-        for message_type in message_types:
-            class_ = message_type[1]
-
-            if class_.handles(message_string):
-                return class_(user, message_string)
-
-        return PlainTextMessage(user, message_string)
+if __name__ == "__main__":
+    app.run(host = "0.0.0.0", port = 8080)
