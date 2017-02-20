@@ -13,7 +13,7 @@ from datetime import datetime
 
 def write(user, message, visible_to=None):
     line = MessageLine(user, message, visible_to=visible_to)
-    with open("chat.log", 'a+') as f:
+    with open(config.chatlog, 'a+') as f:
         f.write(str(line) + "\n")
 
 
@@ -23,10 +23,10 @@ def read():
     replacement = r'<a href="\g<1>" target="_blank">\g<1></a>'
     messages = []
 
-    if not os.path.isfile("chat.log"):
+    if not os.path.isfile(config.chatlog):
         return []
 
-    with open("chat.log", "r") as f:
+    with open(config.chatlog, "r") as f:
         log = f.read().split("\n")
         for line in log:
             if line.strip():
@@ -51,6 +51,20 @@ def get_user_by_uuid(uuid_str):
         return User(*config.users[user_uuid], uuid=user_uuid)
     except:
         return None
+
+
+def handle(user, message_string):
+    for message_type in get_message_types():
+        if message_type.handles(message_string):
+            message_type(user, message_string).execute()
+            return
+
+    messages.PlainTextMessage(user, message_string).execute()
+
+
+def get_message_types():
+    types = inspect.getmembers(sys.modules[messages.__name__], inspect.isclass)
+    return (t[1] for t in types if issubclass(t[1], messages.PlainTextMessage))
 
 
 class MessageEncoder(json.JSONEncoder):
@@ -94,31 +108,4 @@ class User(object):
         self.uuid = uuid
 
 
-class Bot(User):
-
-    def __init__(self):
-        self.username = "alfabot"
-        self.color = "gray"
-        self.number = ""
-        self.uuid = None
-
-
-class MessageParser(object):
-
-    def __init__(self):
-        pass
-
-    def parse(self, user, message_string):
-        message_types = inspect.getmembers(
-            sys.modules[messages.__name__], inspect.isclass)
-
-        message_types = filter(
-            lambda mt: issubclass(mt[1], messages.PlainTextMessage), message_types)
-
-        for message_type in message_types:
-            class_ = message_type[1]
-
-            if class_.handles(message_string):
-                return class_(user, message_string)
-
-        return messages.PlainTextMessage(user, message_string)
+bot = User("alfabot", "gray", "", None)

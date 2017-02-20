@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import chat
 import config
+import messages
 import uuid
 from flask import abort
 from flask import escape
@@ -22,8 +23,7 @@ def token(user_id):
     user = chat.get_user_by_uuid(user_id) or abort(404)
 
     if request.method == 'POST':
-        message_string = request.form['message']
-        chat.MessageParser().parse(user, escape(message_string)).execute()
+        chat.handle(user, request.form['message'])
 
     return render_template('alfachat.html', user=user)
 
