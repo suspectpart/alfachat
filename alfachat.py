@@ -18,7 +18,9 @@ def token(user_id):
     user = chat.get_user_by_uuid(user_id) or abort(404)
 
     if request.method == 'POST':
-        chat.handle(user, escape(request.form['message']))
+        message = request.form['message']
+        if message:
+            chat.handle(user, escape(message))
 
     return render_template('alfachat.html', user=user)
 
