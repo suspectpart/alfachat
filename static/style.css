@@ -27,3 +27,7 @@ form.message-form {
     position: relative;
     top: 50px;
 }
+
+a {
+    color: #0099FF;
+}
