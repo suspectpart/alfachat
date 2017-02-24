@@ -1,4 +1,29 @@
 body {
     background-color: black;
     color: white;
+    font-family: Courier New;
+}
+
+div.chat-window {
+    position: absolute;
+    width: 95%;
+    height: 85%;
+}
+
+h1.headline {
+    position:relative;
+}
+
+iframe.chat-frame{
+    position: relative;
+    border: 0px;
+    overflow:scroll;
+    width: 95%;
+    height: 75%;
+    top: 10px;
+}
+
+form.message-form {
+    position: relative;
+    top: 50px;
 }
