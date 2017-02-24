@@ -61,6 +61,7 @@ class TrumpMessage(PlainTextMessage):
     """@bot trump - Letzten Tweet von @realDonaldTrump anzeigen"""
 
     def __init__(self, user, message_string):
+        self.user = user
         self.trump = chat.User("trump", "orange", "", None)
 
     def execute(self):
@@ -69,6 +70,8 @@ class TrumpMessage(PlainTextMessage):
         tweet = soup.find('div', 'tweet-text').div.text.strip()
         if self.tweet_is_new(tweet):
             chat.write(self.trump, tweet)
+        else:
+            chat.write(chat.bot, "You already did that. SAD!", visible_to=[self.user.username])
 
     def tweet_is_new(self, tweet):
         with open(".trump", "a+") as f:
