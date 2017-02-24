@@ -240,3 +240,27 @@ class HelpMessage(PlainTextMessage):
     @staticmethod
     def handles(message):
         return message.startswith("@bot help")
+
+
+class DeleteMessage(PlainTextMessage):
+    """@bot delete - Die letzte Nachricht entfernen"""
+
+    def __init__(self, user, message_string):
+        self.user = user
+
+    def execute(self):
+        lines = chat.read(False)
+        lines.reverse()
+        remove_entry = None
+        for l in lines:
+            if l.user == self.user.username:
+                remove_entry = l
+                break
+        if remove_entry:
+            lines.remove(remove_entry)
+            lines.reverse()
+            chat.write_lines(lines)
+
+    @staticmethod
+    def handles(message):
+        return message.startswith("@bot delete")

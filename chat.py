@@ -11,13 +11,19 @@ import uuid
 from datetime import datetime
 
 
+def write_lines(lines):
+    with open(config.chatlog, 'w+') as f:
+        for line in lines:
+            f.write(str(line) + "\n")
+
+
 def write(user, message, visible_to=None):
     line = MessageLine(user, message, visible_to=visible_to)
     with open(config.chatlog, 'a+') as f:
         f.write(str(line) + "\n")
 
 
-def read():
+def read(replace):
     pattern = re.compile(
         r"(https?:[\/\/|\\\\]+([\w\d:#@%\/;$()~_?\+-=\\\.&](#!)?)*)")
     replacement = r'<a href="\g<1>" target="_blank">\g<1></a>'
@@ -31,7 +37,8 @@ def read():
         for line in log:
             if line.strip():
                 msgjson = MessageEncoder().decode(json.loads(line))
-                msgjson.message = re.sub(pattern, replacement, msgjson.message)
+                if replace:
+                    msgjson.message = re.sub(pattern, replacement, msgjson.message)
                 messages.append(msgjson)
 
     return messages
