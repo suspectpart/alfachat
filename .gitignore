@@ -5,6 +5,7 @@ config.py
 shows.log
 .trump
 *.bak
+backups/
 
 #vim swap files
 *.swp
