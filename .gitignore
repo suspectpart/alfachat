@@ -4,6 +4,7 @@ access.log
 config.py
 shows.log
 .trump
+*.bak
 
 #vim swap files
 *.swp
