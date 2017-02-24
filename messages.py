@@ -67,7 +67,17 @@ class TrumpMessage(PlainTextMessage):
         html = requests.get("https://mobile.twitter.com/realDonaldTrump").text
         soup = bs4.BeautifulSoup(html, 'html5lib')
         tweet = soup.find('div', 'tweet-text').div.text.strip()
-        chat.write(self.trump, tweet)
+        if self.tweet_is_new(tweet):
+            chat.write(self.trump, tweet)
+
+    def tweet_is_new(self, tweet):
+        with open(".trump", "a+") as f:
+            f.seek(0)
+            if f.read() == tweet:
+                return False
+            f.truncate()
+            f.write(tweet)
+            return True
 
     @staticmethod
     def handles(message):

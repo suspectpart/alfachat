@@ -3,6 +3,7 @@ chat.log
 access.log
 config.py
 shows.log
+.trump
 
 #vim swap files
 *.swp
