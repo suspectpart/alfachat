@@ -8,6 +8,7 @@ app = Flask(__name__, static_folder='static', static_url_path='')
 
 
 @app.route('/robots.txt')
+@app.route('/style.css')
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
 
