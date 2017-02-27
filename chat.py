@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import uuid
+import users
 
 from datetime import datetime
 
@@ -38,26 +39,11 @@ def read(replace):
             if line.strip():
                 msgjson = MessageEncoder().decode(json.loads(line))
                 if replace:
-                    msgjson.message = re.sub(pattern, replacement, msgjson.message)
+                    msgjson.message = re.sub(
+                        pattern, replacement, msgjson.message)
                 messages.append(msgjson)
 
     return messages
-
-
-def get_user_by_name(name):
-    for user_id, values in config.users.items():
-        if values[0] == name:
-            return User(*values, uuid=user_id)
-    return None
-
-
-def get_user_by_uuid(uuid_str):
-    user_uuid = uuid.UUID(uuid_str)
-
-    try:
-        return User(*config.users[user_uuid], uuid=user_uuid)
-    except:
-        return None
 
 
 def handle(user, message_string):
@@ -87,13 +73,13 @@ class MessageEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, message)
 
     def decode(self, obj):
-        user = get_user_by_name(obj["user"])
+        user = users.find_by_name(obj["user"])
 
         if not user:
-            user = User(obj["user"], obj["color"], "", None)
+            user = users.User(obj["user"], obj["color"], "", None)
 
         return MessageLine(
-                user, obj["message"], obj["timestamp"], obj["visible_to"])
+            user, obj["message"], obj["timestamp"], obj["visible_to"])
 
 
 class MessageLine(object):
@@ -107,15 +93,3 @@ class MessageLine(object):
 
     def __str__(self):
         return MessageEncoder().encode(self)
-
-
-class User(object):
-
-    def __init__(self, username, color, number, uuid):
-        self.username = username
-        self.color = color
-        self.number = number
-        self.uuid = uuid
-
-
-bot = User("alfabot", "gray", "", None)

@@ -4,6 +4,7 @@ import config
 import os
 import requests
 import bs4
+import users
 
 from datetime import datetime as dt
 
@@ -30,7 +31,7 @@ class SmsMessage(PlainTextMessage):
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
-        self.recipient = chat.get_user_by_name(self.message_string.split()[2])
+        self.recipient = users.find_by_name(self.message_string.split()[2])
 
     def execute(self):
         sms_text = " ".join(self.message_string.split()[3:])
@@ -38,7 +39,7 @@ class SmsMessage(PlainTextMessage):
         message = "SMS sent to {0}".format(self.recipient.username)
 
         self.send_sms_to(self.recipient.number, sms_text)
-        chat.write(chat.bot, message, visible_to=[
+        chat.write(users.bot, message, visible_to=[
                    self.user.username, self.recipient.username])
 
     def send_sms_to(self, number, text):
@@ -62,7 +63,7 @@ class TrumpMessage(PlainTextMessage):
 
     def __init__(self, user, message_string):
         self.user = user
-        self.trump = chat.User("trump", "orange", "", None)
+        self.trump = users.User("trump", "orange", "", None)
 
     def execute(self):
         html = requests.get("https://mobile.twitter.com/realDonaldTrump").text
@@ -71,7 +72,8 @@ class TrumpMessage(PlainTextMessage):
         if self.tweet_is_new(tweet):
             chat.write(self.trump, tweet)
         else:
-            chat.write(chat.bot, "You already did that. SAD!", visible_to=[self.user.username])
+            chat.write(users.bot, "You already did that. SAD!",
+                       visible_to=[self.user.username])
 
     def tweet_is_new(self, tweet):
         with open(".trump", "a+") as f:
@@ -99,7 +101,7 @@ class AnnouncementMessage(PlainTextMessage):
     def execute(self):
         announcement_text = " ".join(self.message_string.split()[2:])
         message = self.text.format(announcement_text)
-        chat.write(chat.bot, message)
+        chat.write(users.bot, message)
 
     @staticmethod
     def handles(message):
@@ -115,7 +117,7 @@ class AppointmentMessage(PlainTextMessage):
         self.user = user
 
     def execute(self):
-        chat.write(chat.bot, self.get_appointments())
+        chat.write(users.bot, self.get_appointments())
 
     def get_appointments(self):
         if os.path.isfile(config.appointments_path):
@@ -136,7 +138,7 @@ class PrivateMessage(PlainTextMessage):
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
-        self.recipient = chat.get_user_by_name(
+        self.recipient = users.find_by_name(
             self.message_string.split()[0][1:])
 
     def execute(self):
@@ -145,7 +147,7 @@ class PrivateMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return bool(chat.get_user_by_name(message.split()[0][1:]))
+        return bool(users.find_by_name(message.split()[0][1:]))
 
 
 class ShowsMessage(PlainTextMessage):
@@ -158,7 +160,7 @@ class ShowsMessage(PlainTextMessage):
     def execute(self):
         if not os.path.isfile("shows.log"):
             chat.write(
-                chat.bot, "Keine Shows", visible_to=[self.user.username])
+                users.bot, "Keine Shows", visible_to=[self.user.username])
             return
 
         all_shows = []
@@ -171,7 +173,7 @@ class ShowsMessage(PlainTextMessage):
         all_shows = [str(show) for show in all_shows]
         all_shows = "<b>Shows</b><br/><br/>" + "<br/>".join(all_shows)
 
-        chat.write(chat.bot, all_shows, visible_to=[self.user.username])
+        chat.write(users.bot, all_shows, visible_to=[self.user.username])
 
     @staticmethod
     def handles(message):
@@ -179,6 +181,7 @@ class ShowsMessage(PlainTextMessage):
 
 
 class Show(object):
+
     def __init__(self, show_str):
         self.show_str = show_str.strip()
         self.date = dt.strptime(self.show_str.split()[0], '%d.%m.%Y')
@@ -202,13 +205,13 @@ class AddShowMessage(PlainTextMessage):
     def execute(self):
         if not self.parse_showdate():
             error_msg = "Invalid date format (must be dd.mm.yyyy)"
-            chat.write(chat.bot, error_msg, visible_to=[self.user.username])
+            chat.write(users.bot, error_msg, visible_to=[self.user.username])
             return
 
         with open("shows.log", 'a+') as shows:
             shows.write(self.show + "\n")
 
-        chat.write(chat.bot, self.message, visible_to=[self.user.username])
+        chat.write(users.bot, self.message, visible_to=[self.user.username])
 
     def parse_showdate(self):
         try:
@@ -235,7 +238,7 @@ class HelpMessage(PlainTextMessage):
             doc_str = message_type.__doc__
             help_text += "{0}<br/>".format(doc_str) if doc_str else ""
 
-        chat.write(chat.bot, help_text, visible_to=[self.user.username])
+        chat.write(users.bot, help_text, visible_to=[self.user.username])
 
     @staticmethod
     def handles(message):
