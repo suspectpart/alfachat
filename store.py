@@ -1,18 +1,18 @@
 import sqlite3
-import json
+import users
 
 PATH = "chat.sqlite"
 
 
 class Message:
 
-    def __init__(self, message_text, username, visible_to=None):
-        self.username = username
+    def __init__(self, message_text, user, visible_to=None):
+        self.user = user
         self.text = message_text
         self.visible_to = visible_to or []
 
     def __str__(self):
-        return "[{0}] {1} (visible to {2})".format(self.username, self.text, self.visible_to)
+        return "[{0}] {1} (visible to {2})".format(self.user.username, self.text,  ",".join(map(str, message.visible_to)))
 
 
 class Chat(object):
@@ -36,7 +36,7 @@ class Chat(object):
         sql = """create table if not exists chat (
             id integer primary key not null,
             message text not null,
-            username text not null,
+            user_id text not null,
             visible_to text not null,
             timestamp datetime default current_timestamp
         )"""
@@ -45,29 +45,29 @@ class Chat(object):
         self._connection.commit()
 
     def write(self, message):
-        sql = """insert into chat (message, username, visible_to)
+        sql = """insert into chat (message, user_id, visible_to)
             values (?, ?, ?)"""
 
-        message_text = message.text
-        username = message.username
-        visible_to = json.dumps(message.visible_to)
+        visible_to = ",".join(map(str, message.visible_to))
 
-        self._execute(sql, (message_text, username, visible_to))
+        self._execute(sql, (message.text, str(message.user.uuid), visible_to))
         self._connection.commit()
 
     def read(self):
-        sql = """select message, username, visible_to 
+        sql = """select message, user_id, visible_to 
             from chat 
             limit 250"""
-        for record in self._execute(sql, ()):
-            yield Message(record[0], record[1], json.loads(record[2]))
 
+        return [self.message_from_record(r) for r in self._execute(sql, ())]
 
-if __name__ == "__main__":
-    chat = Chat()
-    # chat.clear()
-    message = Message("Test", "horst", ["patrick", "horst"])
-    chat.write(message)
-    messages = chat.read()
-    for message in messages:
-        print(message)
+    def message_from_record(self, record):
+        message_text = record[0]
+        user = users.find_by_user_id(record[1])
+
+        if not record[2]:
+            visible_to = []
+        else:
+            visible_to = [users.find_by_user_id(
+                id) for id in record[2].split(",")]
+
+        return Message(message_text, user, visible_to)

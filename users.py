@@ -10,6 +10,10 @@ class User(object):
         self.number = number
         self.uuid = uuid
 
+    def __str__(self):
+        return str(self.uuid)
+
+    __repr__ = __str__
 
 def find_by_name(name):
     for user_id, values in config.users.items():

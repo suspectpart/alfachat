@@ -18,10 +18,8 @@ def static_from_root():
 def token(user_id):
     user = find_by_user_id(user_id) or abort(404)
 
-    if request.method == 'POST':
-        message = request.form['message']
-        if message:
-            chat.handle(user, escape(message))
+    if request.method == 'POST' and request.form['message']:
+        chat.handle(user, escape(request.form['message']))
 
     return render_template('alfachat.html', user=user)
 
