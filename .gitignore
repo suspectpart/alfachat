@@ -6,6 +6,7 @@ shows.log
 .trump
 *.bak
 backups/
+*.sqlite
 
 #vim swap files
 *.swp
