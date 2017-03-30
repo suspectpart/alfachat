@@ -30,6 +30,12 @@ def messages(user_id):
 
     return render_template('messages.html', messages=chat.read(), user=user)
 
+@app.route("/archiv/<user_id>")
+def archive(user_id):
+    user = User.find_by_user_id(user_id) or abort(404)
+
+    return render_template('archive.html', messages=chat.read(-1), user=user)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

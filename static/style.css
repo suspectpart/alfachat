@@ -11,23 +11,26 @@ div.chat-window {
 }
 
 h1.headline {
-    position:relative;
+    
 }
 
 iframe.chat-frame{
-    position: relative;
     border: 0px;
     overflow:scroll;
     width: 95%;
-    height: 75%;
-    top: 10px;
+    height: 80%;
+    margin-top: 30px;
 }
 
 form.message-form {
-    position: relative;
-    top: 50px;
+    top: 100px;
 }
 
 a {
     color: #0099FF;
+}
+
+div.footer {
+    position: fixed;
+    bottom:10px;
 }

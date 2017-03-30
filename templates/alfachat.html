@@ -12,10 +12,15 @@
 		<div class="chat-window">
 			<h1 class="headline">Willkommen im Alfachat, {{user.username}}!</h1>
 			<iframe class="chat-frame" src="messages/{{user.uuid}}#bottom" charset="utf-8"></iframe>
-			<form class="message-form" method="post" autocomplete="off">
-				<span>Message: &nbsp;</span><input type="text" name="message" style="width:75%" autofocus />
-				<input type="submit" value="go!" />
-			</form>
+			<div>
+				<form class="message-form" method="post" autocomplete="off">
+					<span>Message: &nbsp;</span><input type="text" name="message" style="width:75%" autofocus />
+					<input type="submit" value="go!" />
+				</form>
+			</div>
+			<div class="footer">
+				<a href="/archiv/{{user.uuid}}" target="_blank">Archiv</a>
+			</div>
 		</div>
 	</body>
 </html>

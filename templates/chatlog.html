@@ -1,0 +1,11 @@
+{% for message in messages %}
+	{% if (not message.visible_to) or (user in message.visible_to) %}
+		<div>
+            <span style="float: left; color:{{message.user.color}}; width: 120px; ">[{{message.user.username}}]</span>
+                   
+            <div style="margin-left:150px; margin-top:5px;">
+    	        {{message.text | safe}}
+            </div>
+        </div>
+	{% endif %}
+{% endfor %}

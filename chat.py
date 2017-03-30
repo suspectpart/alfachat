@@ -18,9 +18,9 @@ def write(message):
     c.close()
 
 
-def read():
+def read(limit=250):
     chat = Chat()
-    messages = chat.read()
+    messages = chat.read(limit)
     chat.close()
 
     for message in messages:
