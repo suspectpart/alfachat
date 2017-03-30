@@ -7,7 +7,7 @@ if __name__ == "__main__":
     users_migrated = 0
 
     for user_id, values in users.items():
-        success = User(*values, user_id).save()
+        success = User(*values, uuid=user_id).save()
         users_migrated += int(success)
 
     print("Migrated {0} users".format(users_migrated))
