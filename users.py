@@ -34,6 +34,8 @@ def find_by_user_id(uuid_str):
     except:
         return None
 
+def trump():
+    return find_by_name("trump")
 
 def alfabot():
     return find_by_name("alfabot")
