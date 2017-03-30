@@ -16,23 +16,24 @@ class User(object):
 
     def exists(self):
         with sqlite3.connect(PATH) as connection:
-            self._initialize_database(connection)
+            User._initialize_database(connection)
 
             sql = """select exists(select 1 from users where user_id=(?) LIMIT 1)
             """
             result = connection.cursor().execute(sql, (str(self.user_id),))
             return bool(result.fetchone()[0])
-                
+
     def save(self):
         with sqlite3.connect(PATH) as connection:
-            self._initialize_database(connection)
+            User._initialize_database(connection)
 
             sql = """insert into users (name, user_id, color, number) 
                 values (?, ?, ?, ?)
             """
 
             try:
-                connection.cursor().execute(sql, (self.username, str(self.user_id), self.color, self.number))
+                connection.cursor().execute(
+                    sql, (self.username, str(self.user_id), self.color, self.number))
                 connection.commit()
                 return True
             except sqlite3.IntegrityError:
@@ -41,7 +42,8 @@ class User(object):
     def _execute(self, sql, params):
         return self._connection.cursor().execute(sql, params)
 
-    def _initialize_database(self, connection):
+    @staticmethod
+    def _initialize_database(connection):
         sql = """create table if not exists users (
             id integer primary key not null,
             name text not null,
@@ -55,18 +57,35 @@ class User(object):
 
     @staticmethod
     def find_by_name(name):
-        for user_id, values in config.users.items():
-            if values[0] == name:
-                return User(*values, uuid=user_id)
-        return None
+        with sqlite3.connect(PATH) as connection:
+            User._initialize_database(connection)
 
+            sql = """select * from users where name=(?)
+            """
+
+            result = connection.cursor().execute(sql, (name,))
+            record = result.fetchone()
+
+            if record:
+                return User(record[1], record[3], record[4], UUID(record[2]))
+
+            return None
+
+    # TODO: make this use the DB
     @staticmethod
     def find_by_user_id(uuid_str):
-        user_id = UUID(uuid_str)
+        with sqlite3.connect(PATH) as connection:
+            User._initialize_database(connection)
 
-        try:
-            return User(*config.users[user_id], uuid=user_id)
-        except:
+            sql = """select * from users where user_id=(?)
+            """
+
+            result = connection.cursor().execute(sql, (uuid_str,))
+            record = result.fetchone()
+
+            if record:
+                return User(record[1], record[3], record[4], UUID(record[2]))
+
             return None
 
     @staticmethod
@@ -78,10 +97,10 @@ class User(object):
         return User.find_by_name("alfabot")
 
     def __str__(self):
-        return str(self.uuid)
+        return str(self.user_id)
 
     def __eq__(self, other):
-        return self.uuid == other.uuid
+        return other and (self.user_id == other.user_id)
 
     __repr__ = __str__
 
@@ -132,7 +151,7 @@ class Chat(object):
 
         visible_to = ",".join(map(str, message.visible_to))
 
-        self._execute(sql, (message.text, str(message.user.uuid), visible_to))
+        self._execute(sql, (message.text, str(message.user.user_id), visible_to))
         self._connection.commit()
 
     def read(self, limit=250):
@@ -144,7 +163,7 @@ class Chat(object):
 
     def delete_latest_message_of(self, user):
         sql = """delete from chat where user_id = (?) order by timestamp desc limit 1"""
-        self._execute(sql, (str(user.uuid),))
+        self._execute(sql, (str(user.user_id),))
 
     def message_from_record(self, record):
         message_text = record[0]
