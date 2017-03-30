@@ -4,8 +4,7 @@ import config
 import os
 import requests
 import bs4
-import users
-from store import Message
+from models import *
 
 from datetime import datetime as dt
 
@@ -32,7 +31,7 @@ class SmsMessage(PlainTextMessage):
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
-        self.recipient = users.find_by_name(self.message_string.split()[2])
+        self.recipient = User.find_by_name(self.message_string.split()[2])
 
     def execute(self):
         sms_text = " ".join(self.message_string.split()[3:])
@@ -40,7 +39,7 @@ class SmsMessage(PlainTextMessage):
         message = "SMS gesendet an {0}".format(self.recipient.username)
 
         self.send_sms_to(self.recipient.number, sms_text)
-        return Message(message, users.alfabot(), visible_to=[self.user])
+        return Message(message, User.alfabot(), visible_to=[self.user])
 
     def send_sms_to(self, number, text):
         url = "https://www.smsout.de/client/sendsms.php"
@@ -70,9 +69,9 @@ class TrumpMessage(PlainTextMessage):
         tweet = soup.find('div', 'tweet-text').div.text.strip()
 
         if self.tweet_is_new(tweet):
-            return Message(tweet, users.trump())
+            return Message(tweet, User.trump())
         else:
-            return Message("You already did that. SAD!", users.alfabot(), visible_to=[self.user])
+            return Message("You already did that. SAD!", User.alfabot(), visible_to=[self.user])
 
     def tweet_is_new(self, tweet):
         with open(".trump", "a+") as f:
@@ -100,7 +99,7 @@ class AnnouncementMessage(PlainTextMessage):
     def execute(self):
         announcement_text = " ".join(self.message_string.split()[2:])
         message = self.text.format(announcement_text)
-        return Message(message, users.alfabot())
+        return Message(message, User.alfabot())
 
     @staticmethod
     def handles(message):
@@ -116,7 +115,7 @@ class AppointmentMessage(PlainTextMessage):
         self.user = user
 
     def execute(self):
-        return Message(self.get_appointments(), users.alfabot(), visible_to=[self.user])
+        return Message(self.get_appointments(), User.alfabot(), visible_to=[self.user])
 
     def get_appointments(self):
         if os.path.isfile(config.appointments_path):
@@ -137,7 +136,7 @@ class PrivateMessage(PlainTextMessage):
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
-        self.recipient = users.find_by_name(
+        self.recipient = User.find_by_name(
             self.message_string.split()[0][1:])
 
     def execute(self):
@@ -146,7 +145,7 @@ class PrivateMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return bool(users.find_by_name(message.split()[0][1:]))
+        return bool(User.find_by_name(message.split()[0][1:]))
 
 
 class ShowsMessage(PlainTextMessage):
@@ -158,7 +157,7 @@ class ShowsMessage(PlainTextMessage):
 
     def execute(self):
         if not os.path.isfile("shows.log"):
-            return Message("Keine Shows", users.alfabot(), visible_to=[self.user])
+            return Message("Keine Shows", User.alfabot(), visible_to=[self.user])
 
         all_shows = []
 
@@ -170,7 +169,7 @@ class ShowsMessage(PlainTextMessage):
         all_shows = [str(show) for show in all_shows]
         all_shows = "<b>Shows</b><br/><br/>" + "<br/>".join(all_shows)
 
-        return Message(all_shows, users.alfabot(), visible_to=[self.user])
+        return Message(all_shows, User.alfabot(), visible_to=[self.user])
 
     @staticmethod
     def handles(message):
@@ -202,12 +201,12 @@ class AddShowMessage(PlainTextMessage):
     def execute(self):
         if not self.parse_showdate():
             error_msg = "Invalid date format (must be dd.mm.yyyy)"
-            return Message(error_msg, users.alfabot(), visible_to=[self.user])
+            return Message(error_msg, User.alfabot(), visible_to=[self.user])
 
         with open("shows.log", 'a+') as shows:
             shows.write(self.show + "\n")
 
-        return Message(self.message, users.alfabot(), visible_to=[self.user])
+        return Message(self.message, User.alfabot(), visible_to=[self.user])
 
     def parse_showdate(self):
         try:
@@ -234,7 +233,7 @@ class HelpMessage(PlainTextMessage):
             doc_str = message_type.__doc__
             help_text += "{0}<br/>".format(doc_str) if doc_str else ""
 
-        return Message(help_text, users.alfabot(), visible_to=[self.user])
+        return Message(help_text, User.alfabot(), visible_to=[self.user])
 
     @staticmethod
     def handles(message):
@@ -248,7 +247,7 @@ class DeleteMessage(PlainTextMessage):
         self.user = user
 
     def execute(self):
-        return Message("Feature zur Zeit deaktiviert", users.alfabot(), 
+        return Message("Feature zur Zeit deaktiviert", User.alfabot(), 
                        visible_to=[self.user])
 
     @staticmethod

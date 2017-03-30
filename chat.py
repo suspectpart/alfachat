@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
-import config
 import inspect
-import json
 import messages
 import re
 import sys
-import uuid
-import users
+from models import *
 
 from datetime import datetime
-from store import Chat, Message
+from models import *
 
 def write(message):
     c = Chat()
