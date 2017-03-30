@@ -12,7 +12,46 @@ class User(object):
         self.username = username
         self.color = color
         self.number = number
-        self.uuid = uuid
+        self.user_id = uuid
+
+    def exists(self):
+        with sqlite3.connect(PATH) as connection:
+            self._initialize_database(connection)
+
+            sql = """select exists(select 1 from users where user_id=(?) LIMIT 1)
+            """
+            result = connection.cursor().execute(sql, (str(self.user_id),))
+            return bool(result.fetchone()[0])
+                
+    def save(self):
+        with sqlite3.connect(PATH) as connection:
+            self._initialize_database(connection)
+
+            sql = """insert into users (name, user_id, color, number) 
+                values (?, ?, ?, ?)
+            """
+
+            try:
+                connection.cursor().execute(sql, (self.username, str(self.user_id), self.color, self.number))
+                connection.commit()
+                return True
+            except sqlite3.IntegrityError:
+                return False
+
+    def _execute(self, sql, params):
+        return self._connection.cursor().execute(sql, params)
+
+    def _initialize_database(self, connection):
+        sql = """create table if not exists users (
+            id integer primary key not null,
+            name text not null,
+            user_id text not null unique,
+            color text not null,
+            number text
+        )"""
+
+        connection.cursor().execute(sql, ())
+        connection.commit()
 
     @staticmethod
     def find_by_name(name):
@@ -60,8 +99,8 @@ class Message:
 
 class Chat(object):
 
-    def __init__(self, path=''):
-        self._connection = sqlite3.connect(path or PATH)
+    def __init__(self):
+        self._connection = sqlite3.connect(PATH)
         self._initialize_database()
 
     def clear(self):
