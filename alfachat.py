@@ -28,7 +28,7 @@ def token(user_id):
 def messages(user_id):
     user = User.find_by_user_id(user_id) or abort(404)
 
-    return render_template('messages.html', messages=chat.read(True), user=user)
+    return render_template('messages.html', messages=chat.read(), user=user)
 
 
 if __name__ == "__main__":

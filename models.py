@@ -97,8 +97,8 @@ class Chat(object):
         self._connection.commit()
 
     def read(self):
-        sql = """select message, user_id, visible_to 
-            from chat 
+        sql = """select message, user_id, visible_to
+            from chat
             limit 250"""
 
         return [self.message_from_record(r) for r in self._execute(sql, ())]

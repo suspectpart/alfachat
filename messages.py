@@ -71,7 +71,8 @@ class TrumpMessage(PlainTextMessage):
         if self.tweet_is_new(tweet):
             return Message(tweet, User.trump())
         else:
-            return Message("You already did that. SAD!", User.alfabot(), visible_to=[self.user])
+            return Message("You already did that. SAD!",
+                           User.alfabot(), visible_to=[self.user])
 
     def tweet_is_new(self, tweet):
         with open(".trump", "a+") as f:
@@ -247,7 +248,7 @@ class DeleteMessage(PlainTextMessage):
         self.user = user
 
     def execute(self):
-        return Message("Feature zur Zeit deaktiviert", User.alfabot(), 
+        return Message("Feature zur Zeit deaktiviert", User.alfabot(),
                        visible_to=[self.user])
 
     @staticmethod
