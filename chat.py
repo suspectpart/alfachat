@@ -3,9 +3,7 @@ import inspect
 import messages
 import re
 import sys
-from models import *
 
-from datetime import datetime
 from models import *
 
 def write(message):
@@ -18,7 +16,6 @@ def read(replace):
     pattern = re.compile(
         r"(https?:[\/\/|\\\\]+([\w\d:#@%\/;$()~_?\+-=\\\.&](#!)?)*)")
     replacement = r'<a href="\g<1>" target="_blank">\g<1></a>'
-    messages = []
 
     chat = Chat()
     messages = chat.read()
