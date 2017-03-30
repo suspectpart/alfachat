@@ -13,7 +13,11 @@ class User(object):
     def __str__(self):
         return str(self.uuid)
 
+    def __eq__(self, other):
+        return self.uuid == other.uuid
+
     __repr__ = __str__
+
 
 def find_by_name(name):
     for user_id, values in config.users.items():
@@ -31,4 +35,5 @@ def find_by_user_id(uuid_str):
         return None
 
 
-bot = User("alfabot", "gray", "", None)
+def alfabot():
+    return find_by_name("alfabot")

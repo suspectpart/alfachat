@@ -8,12 +8,14 @@
 <body onload="javascript:window.scrollTo(0,document.body.scrollHeight)" style="font-family: Courier New">
     
 			{% for message in messages %}
-			{% if (not message.visible_to) or (user.username in message.visible_to) %}		
-                <span style="float:left; color:{{message.color}}; width: 120px; margin-top:5px;">[{{message.user}}]</span>
+			{% if (not message.visible_to) or (user in message.visible_to) %}
+			<div>
+                <span style="float: left; color:{{message.user.color}}; width: 120px; ">[{{message.user.username}}]</span>
                     
                 <div style="margin-left:150px; margin-top:5px;">
-                    {{message.message | safe}}
+                    {{message.text | safe}}
                 </div>
+            </div>
 			{% endif %}
 			{% endfor %}
 	<a name="scrolldown" />

@@ -36,11 +36,10 @@ class SmsMessage(PlainTextMessage):
     def execute(self):
         sms_text = " ".join(self.message_string.split()[3:])
         sms_text = "[{0}] {1}".format(self.user.username, sms_text)
-        message = "SMS sent to {0}".format(self.recipient.username)
+        message = "SMS gesendet an {0}".format(self.recipient.username)
 
         self.send_sms_to(self.recipient.number, sms_text)
-        chat.write(users.bot, message, visible_to=[
-                   self.user.username, self.recipient.username])
+        chat.write(users.alfabot(), message, visible_to=[self.user])
 
     def send_sms_to(self, number, text):
         url = "https://www.smsout.de/client/sendsms.php"
@@ -63,7 +62,7 @@ class TrumpMessage(PlainTextMessage):
 
     def __init__(self, user, message_string):
         self.user = user
-        self.trump = users.User("trump", "orange", "", None)
+        self.trump = users.find_by_name("trump")
 
     def execute(self):
         html = requests.get("https://mobile.twitter.com/realDonaldTrump").text
@@ -72,8 +71,8 @@ class TrumpMessage(PlainTextMessage):
         if self.tweet_is_new(tweet):
             chat.write(self.trump, tweet)
         else:
-            chat.write(users.bot, "You already did that. SAD!",
-                       visible_to=[self.user.username])
+            chat.write(users.alfabot(), "You already did that. SAD!",
+                       visible_to=[self.user])
 
     def tweet_is_new(self, tweet):
         with open(".trump", "a+") as f:
@@ -101,7 +100,7 @@ class AnnouncementMessage(PlainTextMessage):
     def execute(self):
         announcement_text = " ".join(self.message_string.split()[2:])
         message = self.text.format(announcement_text)
-        chat.write(users.bot, message)
+        chat.write(users.alfabot(), message)
 
     @staticmethod
     def handles(message):
@@ -117,7 +116,8 @@ class AppointmentMessage(PlainTextMessage):
         self.user = user
 
     def execute(self):
-        chat.write(users.bot, self.get_appointments())
+        chat.write(users.alfabot(), self.get_appointments(),
+                   visible_to=[self.user])
 
     def get_appointments(self):
         if os.path.isfile(config.appointments_path):
@@ -143,7 +143,7 @@ class PrivateMessage(PlainTextMessage):
 
     def execute(self):
         chat.write(self.user, self.message_string, visible_to=[
-                   self.user.username, self.recipient.username])
+                   self.user, self.recipient])
 
     @staticmethod
     def handles(message):
@@ -160,7 +160,7 @@ class ShowsMessage(PlainTextMessage):
     def execute(self):
         if not os.path.isfile("shows.log"):
             chat.write(
-                users.bot, "Keine Shows", visible_to=[self.user.username])
+                users.alfabot(), "Keine Shows", visible_to=[self.user])
             return
 
         all_shows = []
@@ -173,7 +173,7 @@ class ShowsMessage(PlainTextMessage):
         all_shows = [str(show) for show in all_shows]
         all_shows = "<b>Shows</b><br/><br/>" + "<br/>".join(all_shows)
 
-        chat.write(users.bot, all_shows, visible_to=[self.user.username])
+        chat.write(users.alfabot(), all_shows, visible_to=[self.user])
 
     @staticmethod
     def handles(message):
@@ -205,13 +205,13 @@ class AddShowMessage(PlainTextMessage):
     def execute(self):
         if not self.parse_showdate():
             error_msg = "Invalid date format (must be dd.mm.yyyy)"
-            chat.write(users.bot, error_msg, visible_to=[self.user.username])
+            chat.write(users.alfabot(), error_msg, visible_to=[self.user])
             return
 
         with open("shows.log", 'a+') as shows:
             shows.write(self.show + "\n")
 
-        chat.write(users.bot, self.message, visible_to=[self.user.username])
+        chat.write(users.alfabot(), self.message, visible_to=[self.user])
 
     def parse_showdate(self):
         try:
@@ -238,7 +238,7 @@ class HelpMessage(PlainTextMessage):
             doc_str = message_type.__doc__
             help_text += "{0}<br/>".format(doc_str) if doc_str else ""
 
-        chat.write(users.bot, help_text, visible_to=[self.user.username])
+        chat.write(users.alfabot(), help_text, visible_to=[self.user])
 
     @staticmethod
     def handles(message):
@@ -252,17 +252,8 @@ class DeleteMessage(PlainTextMessage):
         self.user = user
 
     def execute(self):
-        lines = chat.read(False)
-        lines.reverse()
-        remove_entry = None
-        for l in lines:
-            if l.user == self.user.username:
-                remove_entry = l
-                break
-        if remove_entry:
-            lines.remove(remove_entry)
-            lines.reverse()
-            chat.write_lines(lines)
+        chat.write(users.alfabot(), "Feature zur Zeit deaktiviert",
+                   visible_to=[self.user])
 
     @staticmethod
     def handles(message):
