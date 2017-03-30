@@ -248,8 +248,10 @@ class DeleteMessage(PlainTextMessage):
         self.user = user
 
     def execute(self):
-        return Message("Feature zur Zeit deaktiviert", User.alfabot(),
-                       visible_to=[self.user])
+        chat = Chat()
+        chat.delete_latest_message_of(self.user)
+        chat.close()
+        return Message("Message gelöscht", User.alfabot(), visible_to=[self.user])
 
     @staticmethod
     def handles(message):

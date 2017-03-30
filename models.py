@@ -103,6 +103,10 @@ class Chat(object):
 
         return [self.message_from_record(r) for r in self._execute(sql, ())]
 
+    def delete_latest_message_of(self, user):
+        sql = """delete from chat where user_id = (?) order by timestamp desc limit 1"""
+        self._execute(sql, (str(user.uuid),))
+
     def message_from_record(self, record):
         message_text = record[0]
         user = User.find_by_user_id(record[1])
