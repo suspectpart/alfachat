@@ -3,8 +3,40 @@ import sqlite3
 from uuid import UUID
 import config
 import requests
+import bs4
+from datetime import datetime as dt
 
 PATH = "chat.sqlite"
+
+
+class Show(object):
+
+    def __init__(self, show_str):
+        self.show_str = show_str.strip()
+        self.date = dt.strptime(self.show_str.split()[0], '%d.%m.%Y')
+
+    def lies_in_past(self):
+        return self.date >= dt.today()
+
+    def __str__(self):
+        return self.show_str
+
+
+class TrumpTweet(object):
+
+    def __init__(self):
+        html = requests.get("https://mobile.twitter.com/realDonaldTrump").text
+        soup = bs4.BeautifulSoup(html, 'html5lib')
+        self.text = soup.find('div', 'tweet-text').div.text.strip()
+
+    def is_new(self):
+        with open(".trump", "a+") as f:
+            f.seek(0)
+            if f.read() == self.text:
+                return False
+            f.truncate()
+            f.write(self.text)
+            return True
 
 
 class SMS(object):
