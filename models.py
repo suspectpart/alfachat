@@ -125,7 +125,7 @@ class Message:
 
     @staticmethod
     def is_private(message):
-        return bool(User.find_by_name(message.split()[0][1:]))
+        return message.startswith("@") and bool(User.find_by_name(message.split()[0][1:]))
 
     def __str__(self):
         return "[{0}] {1} (visible to {2})".format(

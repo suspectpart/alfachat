@@ -25,16 +25,16 @@ class PlainTextMessage(object):
 
 class SmsMessage(PlainTextMessage):
 
-    """@bot sms &lt;user&gt; &lt;text&gt;
+    """/sms &lt;user&gt; &lt;text&gt;
     - SMS mit &lt;text&gt; an &lt;user&gt; versenden"""
 
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
-        self.recipient = User.find_by_name(self.message_string.split()[2])
+        self.recipient = User.find_by_name(self.message_string.split()[1])
 
     def execute(self):
-        sms_text = " ".join(self.message_string.split()[3:])
+        sms_text = " ".join(self.message_string.split()[2:])
         sms_text = "[{0}] {1}".format(self.user.username, sms_text)
         message = "SMS gesendet an {0}".format(self.recipient.username)
 
@@ -53,12 +53,12 @@ class SmsMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return message.startswith("@bot sms")
+        return message.startswith("/sms")
 
 
 class TrumpMessage(PlainTextMessage):
 
-    """@bot trump - Letzten Tweet von @realDonaldTrump anzeigen"""
+    """/trump - Letzten Tweet von @realDonaldTrump anzeigen"""
 
     def __init__(self, user, message_string):
         self.user = user
@@ -85,12 +85,12 @@ class TrumpMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return message.startswith("@bot trump")
+        return message.startswith("/trump")
 
 
 class AnnouncementMessage(PlainTextMessage):
 
-    """@bot announce &lt;text&gt; - Öffentliche Kundmachung versenden"""
+    """/announce &lt;text&gt; - Öffentliche Kundmachung versenden"""
 
     def __init__(self, user, message_string):
         self.user = user
@@ -98,18 +98,18 @@ class AnnouncementMessage(PlainTextMessage):
         self.text = "<b>++++Öffentliche Kundmachung++++</b> <br/><br/>{0}"
 
     def execute(self):
-        announcement_text = " ".join(self.message_string.split()[2:])
+        announcement_text = " ".join(self.message_string.split()[1:])
         message = self.text.format(announcement_text)
         return Message(message, User.alfabot())
 
     @staticmethod
     def handles(message):
-        return message.startswith("@bot announce")
+        return message.startswith("/announce")
 
 
 class AppointmentMessage(PlainTextMessage):
 
-    """@bot termine - Thekentermine anzeigen"""
+    """/termine - Thekentermine anzeigen"""
 
     def __init__(self, user, message_string):
         self.message_string = message_string
@@ -127,7 +127,7 @@ class AppointmentMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return message.startswith("@bot termine")
+        return message.startswith("/termine")
 
 
 class PrivateMessage(PlainTextMessage):
@@ -151,7 +151,7 @@ class PrivateMessage(PlainTextMessage):
 
 class ShowsMessage(PlainTextMessage):
 
-    """@bot shows - Liste aller anstehenden Shows"""
+    """/shows - Liste aller anstehenden Shows"""
 
     def __init__(self, user, message_string):
         self.user = user
@@ -174,7 +174,7 @@ class ShowsMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return message.startswith("@bot shows")
+        return message.startswith("/shows")
 
 
 class Show(object):
@@ -192,10 +192,10 @@ class Show(object):
 
 class AddShowMessage(PlainTextMessage):
 
-    """@bot addshow - Neue Show hinzufügen (dd.mm.yyyy bands location)"""
+    """/addshow - Neue Show hinzufügen (dd.mm.yyyy bands location)"""
 
     def __init__(self, user, message_string):
-        self.show = " ".join(message_string.split()[2:])
+        self.show = " ".join(message_string.split()[1:])
         self.message = "Show added: {0}".format(self.show)
         self.user = user
 
@@ -217,12 +217,12 @@ class AddShowMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return message.startswith("@bot addshow")
+        return message.startswith("/addshow")
 
 
 class HelpMessage(PlainTextMessage):
 
-    """@bot help - Diese Hilfe anzeigen"""
+    """/help - Diese Hilfe anzeigen"""
 
     def __init__(self, user, message_string):
         self.user = user
@@ -238,11 +238,11 @@ class HelpMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return message.startswith("@bot help")
+        return message.startswith("/help")
 
 
 class DeleteMessage(PlainTextMessage):
-    """@bot delete - Die letzte Nachricht entfernen"""
+    """/delete - Die letzte Nachricht entfernen"""
 
     def __init__(self, user, message_string):
         self.user = user
@@ -255,4 +255,4 @@ class DeleteMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return message.startswith("@bot delete")
+        return message.startswith("/delete")
