@@ -71,7 +71,6 @@ class User(object):
 
             return None
 
-    # TODO: make this use the DB
     @staticmethod
     def find_by_user_id(uuid_str):
         with sqlite3.connect(PATH) as connection:
@@ -87,6 +86,18 @@ class User(object):
                 return User(record[1], record[3], record[4], UUID(record[2]))
 
             return None
+
+    @staticmethod
+    def all():
+        with sqlite3.connect(PATH) as connection:
+            User._initialize_database(connection)
+
+            sql = """select * from users"""
+
+            result = connection.cursor().execute(sql, ())
+
+            return [User(r[1], r[3], r[4], UUID(r[2])) for r in result]
+            
 
     @staticmethod
     def trump():

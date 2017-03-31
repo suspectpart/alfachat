@@ -2,7 +2,6 @@
 import sys
 import uuid
 
-from config import users
 from models import User
 
 if __name__ == "__main__":

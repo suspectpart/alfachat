@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import chat
+import uuid
 from flask import abort, escape, Flask, request
 from flask import render_template
 from flask import send_from_directory
