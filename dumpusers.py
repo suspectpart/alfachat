@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import sys
-import uuid
-
 from models import User
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-import config
 import sqlite3
 
 from uuid import UUID
@@ -27,7 +26,8 @@ class User(object):
         with sqlite3.connect(PATH) as connection:
             User._initialize_database(connection)
 
-            sql = """insert into users (name, user_id, color, number) 
+            sql = """insert into users
+                (name, user_id, color, number)
                 values (?, ?, ?, ?)
             """
 
@@ -97,7 +97,6 @@ class User(object):
             result = connection.cursor().execute(sql, ())
 
             return [User(r[1], r[3], r[4], UUID(r[2])) for r in result]
-            
 
     @staticmethod
     def trump():
@@ -124,7 +123,9 @@ class Message:
         self.visible_to = visible_to or []
 
     def __str__(self):
-        return "[{0}] {1} (visible to {2})".format(self.user.username, self.text,  ",".join(map(str, message.visible_to)))
+        return "[{0}] {1} (visible to {2})".format(
+            self.user.username,
+            self.text, ",".join(map(str, self.visible_to)))
 
 
 class Chat(object):
@@ -162,7 +163,8 @@ class Chat(object):
 
         visible_to = ",".join(map(str, message.visible_to))
 
-        self._execute(sql, (message.text, str(message.user.user_id), visible_to))
+        self._execute(sql, (message.text, str(
+            message.user.user_id), visible_to))
         self._connection.commit()
 
     def read(self, limit=250):
@@ -170,13 +172,16 @@ class Chat(object):
             from chat
             limit (?)"""
 
-        return [self.message_from_record(r) for r in self._execute(sql, (limit,))]
+        return [self._to_message(r) for r in self._execute(sql, (limit,))]
 
     def delete_latest_message_of(self, user):
-        sql = """delete from chat where user_id = (?) order by timestamp desc limit 1"""
+        sql = """delete from chat where user_id = (?)
+            order by timestamp desc limit 1
+        """
+
         self._execute(sql, (str(user.user_id),))
 
-    def message_from_record(self, record):
+    def _to_message(self, record):
         message_text = record[0]
         user = User.find_by_user_id(record[1])
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import chat
-import uuid
 from flask import abort, escape, Flask, request
 from flask import render_template
 from flask import send_from_directory
@@ -30,6 +29,7 @@ def messages(user_id):
     user = User.find_by_user_id(user_id) or abort(404)
 
     return render_template('messages.html', messages=chat.read(), user=user)
+
 
 @app.route("/archiv/<user_id>")
 def archive(user_id):

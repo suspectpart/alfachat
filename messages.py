@@ -201,7 +201,7 @@ class AddShowMessage(PlainTextMessage):
 
     def execute(self):
         if not self.parse_showdate():
-            error_msg = "Invalid date format (must be dd.mm.yyyy)"
+            error_msg = "Unzulässiges Datumsformat (erwartet: dd.mm.yyyy)"
             return Message(error_msg, User.alfabot(), visible_to=[self.user])
 
         with open("shows.log", 'a+') as shows:
@@ -212,7 +212,7 @@ class AddShowMessage(PlainTextMessage):
     def parse_showdate(self):
         try:
             return dt.strptime(self.show.split()[0], '%d.%m.%Y')
-        except:
+        except ValueError:
             return None
 
     @staticmethod
