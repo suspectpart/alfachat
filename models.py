@@ -167,12 +167,15 @@ class Chat(object):
             message.user.user_id), visible_to))
         self._connection.commit()
 
-    def read(self, limit=250):
+    def read(self, limit=-1):
         sql = """select message, user_id, visible_to
             from chat
+            order by timestamp desc
             limit (?)"""
 
-        return [self._to_message(r) for r in self._execute(sql, (limit,))]
+        result = self._execute(sql, (limit,))
+
+        return [self._to_message(r) for r in result][::-1]
 
     def delete_latest_message_of(self, user):
         sql = """delete from chat where user_id = (?)

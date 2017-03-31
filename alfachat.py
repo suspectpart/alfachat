@@ -28,14 +28,14 @@ def token(user_id):
 def messages(user_id):
     user = User.find_by_user_id(user_id) or abort(404)
 
-    return render_template('messages.html', messages=chat.read(), user=user)
+    return render_template('messages.html', messages=chat.read(250), user=user)
 
 
 @app.route("/archiv/<user_id>")
 def archive(user_id):
     user = User.find_by_user_id(user_id) or abort(404)
 
-    return render_template('archive.html', messages=chat.read(-1), user=user)
+    return render_template('archive.html', messages=chat.read(), user=user)
 
 
 if __name__ == "__main__":
