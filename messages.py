@@ -29,27 +29,16 @@ class SmsMessage(PlainTextMessage):
     - SMS mit &lt;text&gt; an &lt;user&gt; versenden"""
 
     def __init__(self, user, message_string):
-        self.message_string = message_string
         self.user = user
-        self.recipient = User.find_by_name(self.message_string.split()[1])
+        self.recipient = User.find_by_name(message_string.split()[1])
+        self.text = " ".join(message_string.split()[2:])
 
     def execute(self):
-        sms_text = " ".join(self.message_string.split()[2:])
-        sms_text = "[{0}] {1}".format(self.user.username, sms_text)
+        SMS(self.user, self.recipient, self.text).send()
+
         message = "SMS gesendet an {0}".format(self.recipient.username)
 
-        self.send_sms_to(self.recipient.number, sms_text)
         return Message(message, User.alfabot(), visible_to=[self.user])
-
-    def send_sms_to(self, number, text):
-        url = "https://www.smsout.de/client/sendsms.php"
-        query = "?Username={0}&Password={1}&SMSTo={2}&SMSType=V1&SMSText={3}"
-
-        user, password = config.sms_config
-
-        request_url = url + query.format(user, password, number, text)
-        print(request_url)
-        return requests.get(request_url)
 
     @staticmethod
     def handles(message):

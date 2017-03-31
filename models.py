@@ -1,8 +1,32 @@
 import sqlite3
 
 from uuid import UUID
+import config
+import requests
 
 PATH = "chat.sqlite"
+
+
+class SMS(object):
+    url = "https://www.smsout.de/client/sendsms.php"
+    query = "?Username={0}&Password={1}&SMSTo={2}&SMSType=V1&SMSText={3}"
+
+    def __init__(self, sender, recipient, text):
+        self.sender = sender
+        self.recipient = recipient
+        self.text = text
+
+    def send(self):
+        sms_text = "[{0}] {1}".format(self.sender.username, self.text)
+
+        user, password = config.sms_config
+        number = self.recipient.number
+
+        url = self.url + self.query.format(user, password, number, sms_text)
+
+        print(url)
+
+        return requests.get(url)
 
 
 class User(object):
