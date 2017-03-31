@@ -3,7 +3,7 @@
 		<div>
             <span style="float: left; color:{{message.user.color}}; width: 120px; ">[{{message.user.username}}]</span>
                    
-            <div style="margin-left:150px; margin-top:5px;">
+            <div style="margin-left:150px; margin-top:5px;" class="{{'private-message' if message.is_private else ''}}">
     	        {{message.text | safe}}
             </div>
         </div>

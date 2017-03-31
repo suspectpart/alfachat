@@ -146,7 +146,7 @@ class PrivateMessage(PlainTextMessage):
 
     @staticmethod
     def handles(message):
-        return bool(User.find_by_name(message.split()[0][1:]))
+        return Message.is_private(message)
 
 
 class ShowsMessage(PlainTextMessage):

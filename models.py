@@ -121,6 +121,11 @@ class Message:
         self.user = user
         self.text = message_text
         self.visible_to = visible_to or []
+        self.is_private = Message.is_private(self.text)
+
+    @staticmethod
+    def is_private(message):
+        return bool(User.find_by_name(message.split()[0][1:]))
 
     def __str__(self):
         return "[{0}] {1} (visible to {2})".format(
