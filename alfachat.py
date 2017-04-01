@@ -2,7 +2,7 @@
 from flask import abort, escape, Flask, request
 from flask import render_template
 from flask import send_from_directory
-
+from cache_bust import create_hash
 from messages import MessageParser
 from models import Chat, User
 
@@ -15,15 +15,19 @@ def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
 
 
-@app.route("/<user_id>", methods=['POST', 'GET'])
-def token(user_id):
+@app.route("/<user_id>", methods=['GET'])
+def chat_read(user_id):
+    return render_template('alfachat.html', user=authenticate(user_id))
+
+
+@app.route("/<user_id>", methods=['POST'])
+def chat_write(user_id):
     user = authenticate(user_id)
 
-    if request.method == 'POST' and request.form['message']:
-        raw_text = escape(request.form['message'])
+    raw_text = escape(request.form['message'])
 
-        with Chat() as chat:
-            chat.write(MessageParser().parse(user, raw_text))
+    with Chat() as chat:
+        chat.write(MessageParser().parse(user, raw_text))
 
     return render_template('alfachat.html', user=user)
 
@@ -50,6 +54,11 @@ def archive(user_id):
 
 def authenticate(user_id):
     return User.find_by_user_id(user_id) or abort(404)
+
+
+@app.url_defaults
+def hashed_url_for_static_file(endpoint, values):
+    create_hash(endpoint, values, app)
 
 
 if __name__ == "__main__":
