@@ -27,7 +27,7 @@ class TrumpTweet(object):
 
     def __init__(self):
         html = requests.get("https://mobile.twitter.com/realDonaldTrump").text
-        soup = bs4.BeautifulSoup(html, 'html5lib')
+        soup = bs4.BeautifulSoup(html, 'lxml')
         self.text = soup.find('div', 'tweet-text').div.text.strip()
 
     def is_new(self):
