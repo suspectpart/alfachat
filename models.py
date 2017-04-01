@@ -4,7 +4,7 @@ import re
 import requests
 import sqlite3
 
-from datetime import datetime as dt
+from datetime import datetime
 from uuid import UUID
 
 PATH = "chat.sqlite"
@@ -14,10 +14,10 @@ class Show(object):
 
     def __init__(self, show_str):
         self.show_str = show_str.strip()
-        self.date = dt.strptime(self.show_str.split()[0], '%d.%m.%Y')
+        self.date = datetime.strptime(self.show_str.split()[0], '%d.%m.%Y')
 
     def lies_in_past(self):
-        return self.date >= dt.today()
+        return self.date >= datetime.today()
 
     def __str__(self):
         return self.show_str
