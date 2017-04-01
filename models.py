@@ -268,3 +268,9 @@ class Chat(object):
                 id) for id in record[2].split(",")]
 
         return Message(message_text, user, visible_to)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        self.close()

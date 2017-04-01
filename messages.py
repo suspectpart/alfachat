@@ -1,27 +1,41 @@
 # -*- coding: utf-8 -*-
-import chat
 import config
 import os
-from models import *
+import inspect
+import sys
 
 from datetime import datetime as dt
+from models import *
 
 
-class PlainTextMessage(object):
+class MessageParser(object):
 
-    def __init__(self, user, message_string):
-        self.message_string = message_string
-        self.user = user
+    def __init__(self):
+        self.types = self.get_message_types()
 
-    def execute(self):
-        return Message(self.message_string, self.user)
+    def parse(self, user, message_string):
+        for message_type in self.types:
+            if message_type.handles(message_string):
+                return message_type(user, message_string).execute()
+
+        return Message(message_string, user)
+
+    def get_message_types(self):
+        types = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+
+        return (t[1] for t in types if issubclass(t[1], BaseMessage))
+
+
+class BaseMessage(object):
+    def __init__(self):
+        pass
 
     @staticmethod
     def handles(message):
         return False
 
 
-class SmsMessage(PlainTextMessage):
+class SmsMessage(BaseMessage):
 
     """/sms &lt;user&gt; &lt;text&gt;
     - SMS mit &lt;text&gt; an &lt;user&gt; versenden"""
@@ -43,7 +57,7 @@ class SmsMessage(PlainTextMessage):
         return message.startswith("/sms")
 
 
-class TrumpMessage(PlainTextMessage):
+class TrumpMessage(BaseMessage):
 
     """/trump - Letzten Tweet von @realDonaldTrump anzeigen"""
 
@@ -64,7 +78,7 @@ class TrumpMessage(PlainTextMessage):
         return message.startswith("/trump")
 
 
-class AnnouncementMessage(PlainTextMessage):
+class AnnouncementMessage(BaseMessage):
 
     """/announce &lt;text&gt; - Öffentliche Kundmachung versenden"""
 
@@ -83,7 +97,7 @@ class AnnouncementMessage(PlainTextMessage):
         return message.startswith("/announce")
 
 
-class AppointmentMessage(PlainTextMessage):
+class AppointmentMessage(BaseMessage):
 
     """/termine - Thekentermine anzeigen"""
 
@@ -106,7 +120,7 @@ class AppointmentMessage(PlainTextMessage):
         return message.startswith("/termine")
 
 
-class PrivateMessage(PlainTextMessage):
+class PrivateMessage(BaseMessage):
 
     """@&lt;user&gt; - Private Nachricht an @&lt;user&gt; senden"""
 
@@ -125,7 +139,7 @@ class PrivateMessage(PlainTextMessage):
         return Message.is_private(message)
 
 
-class ShowsMessage(PlainTextMessage):
+class ShowsMessage(BaseMessage):
 
     """/shows - Liste aller anstehenden Shows"""
 
@@ -153,7 +167,7 @@ class ShowsMessage(PlainTextMessage):
         return message.startswith("/shows")
 
 
-class AddShowMessage(PlainTextMessage):
+class AddShowMessage(BaseMessage):
 
     """/addshow - Neue Show hinzufügen (dd.mm.yyyy bands location)"""
 
@@ -183,7 +197,7 @@ class AddShowMessage(PlainTextMessage):
         return message.startswith("/addshow")
 
 
-class HelpMessage(PlainTextMessage):
+class HelpMessage(BaseMessage):
 
     """/help - Diese Hilfe anzeigen"""
 
@@ -193,7 +207,7 @@ class HelpMessage(PlainTextMessage):
     def execute(self):
         help_text = "<b>Hilfe</b><br/><br/>"
 
-        for message_type in chat.get_message_types():
+        for message_type in MessageParser().types:
             doc_str = message_type.__doc__
             help_text += "{0}<br/>".format(doc_str) if doc_str else ""
 
@@ -204,16 +218,16 @@ class HelpMessage(PlainTextMessage):
         return message.startswith("/help")
 
 
-class DeleteMessage(PlainTextMessage):
+class DeleteMessage(BaseMessage):
     """/delete - Die letzte Nachricht entfernen"""
 
     def __init__(self, user, message_string):
         self.user = user
 
     def execute(self):
-        chat = Chat()
-        chat.delete_latest_message_of(self.user)
-        chat.close()
+        with Chat() as chat:
+            chat.delete_latest_message_of(self.user)
+
         return Message("Message gelöscht", User.alfabot(), visible_to=[self.user])
 
     @staticmethod
