@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
 import inspect
 import messages
-import re
 import sys
 
 from models import *
-
-pattern = re.compile(
-    r"(https?:[\/\/|\\\\]+([\w\d:#@%\/;$()~_?\+-=\\\.&](#!)?)*)")
-
-repl = r'<a href="\g<1>" target="_blank">\g<1></a>'
 
 
 def write(message):
@@ -22,9 +16,6 @@ def read(limit=-1):
     chat = Chat()
     messages = chat.read(limit)
     chat.close()
-
-    for message in messages:
-        message.text = re.sub(pattern, repl, message.text)
 
     return messages
 

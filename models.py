@@ -1,10 +1,11 @@
+import bs4
+import config
+import re
+import requests
 import sqlite3
 
-from uuid import UUID
-import config
-import requests
-import bs4
 from datetime import datetime as dt
+from uuid import UUID
 
 PATH = "chat.sqlite"
 
@@ -173,15 +174,26 @@ class User(object):
 
 class Message:
 
+    pattern = re.compile(
+        r"(https?:[\/\/|\\\\]+([\w\d:#@%\/;$()~_?\+-=\\\.&](#!)?)*)")
+
+    repl = r'<a href="\g<1>" target="_blank">\g<1></a>'
+
     def __init__(self, message_text, user, visible_to=None):
         self.user = user
         self.text = message_text
         self.visible_to = visible_to or []
         self.is_private = Message.is_private(self.text)
 
+    def html_text(self):
+        return re.sub(self.pattern, self.repl, self.text)
+
     @staticmethod
     def is_private(message):
-        return message.startswith("@") and bool(User.find_by_name(message.split()[0][1:]))
+        starts_with_at = message.startswith("@")
+        followed_by_user = bool(User.find_by_name(message.split()[0][1:]))
+
+        return starts_with_at and followed_by_user
 
     def __str__(self):
         return "[{0}] {1} (visible to {2})".format(
