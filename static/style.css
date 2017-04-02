@@ -4,20 +4,16 @@ body {
     font-family: Courier New;
 }
 
+a {
+    color: #0099FF;
+}
+
 div.chat-window {
     position: absolute;
     width: 95%;
     height: 85%;
 }
 
-h1.headline {
-
-    
-}
-
-div.private-message {
-    color: #FF3333;
-}
 
 iframe.chat-frame{
     border: 0px;
@@ -27,12 +23,12 @@ iframe.chat-frame{
     margin-top: 30px;
 }
 
-form.message-form {
-    top: 100px;
+div.private-message {
+    color: #99CC33;
 }
 
-a {
-    color: #0099FF;
+form.message-form {
+    top: 100px;
 }
 
 div.footer {
