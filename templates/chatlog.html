@@ -1,11 +1,66 @@
+<div id="chat-container">
 {% for message in messages %}
 	{% if (not message.visible_to) or (user in message.visible_to) %}
 		<div>
-            <span style="float: left; color:{{message.user.color}}; width: 120px; ">[{{message.user.username}}]</span>
+            <span class="user" style="color:{{message.user.color}};">[{{message.user.username}}]</span>
                    
-            <div style="margin-left:150px; margin-top:5px;" class="{{'private-message' if message.is_private else ''}}">
+            <div class="message {{'private' if message.is_private else ''}}">
     	        {{message.html_text() | safe}}
             </div>
         </div>
 	{% endif %}
 {% endfor %}
+</div>
+
+<script type="text/javascript">
+	(function() {
+		var latest_pk = {{messages[-1].pk}};
+			
+			function scroll_to_bottom() {
+				window.scrollTo(0,document.body.scrollHeight);
+			}
+
+			function appendToChat(message) {
+				var message_text = document.createElement('div');
+				message_text.setAttribute("class", "message" + (message.private ? " private" : ""));
+				message_text.appendChild(document.createTextNode(message.text))
+				
+				var username = document.createElement('span');
+				username.setAttribute("style", "color:" + message.color);
+				username.setAttribute("class", "user")
+				username.appendChild(document.createTextNode("[" + message.user + "]"))
+
+				var container = document.createElement('div');
+				container.appendChild(username);
+				container.appendChild(message_text);
+
+				document.getElementById("chat-container").appendChild(container);
+			}
+
+			function display(messages) {		
+				if(messages.length === 0) { return; }
+
+				for(var i = 0; i < messages.length; i++) {
+					appendToChat(messages[i]);
+				}
+
+				latest_pk = messages.slice(-1)[0].pk;
+
+				scroll_to_bottom();
+			}
+
+			function getNewMessages() {
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function() {
+						if (this.readyState == 4 && this.status == 200) {
+								display(JSON.parse(this.responseText));
+						}
+					};
+
+					xhttp.open("GET", "/latest/{{user.user_id}}/" + latest_pk, true);
+					xhttp.send();
+			} 
+
+			setInterval(getNewMessages, 10000)
+	})();
+</script>

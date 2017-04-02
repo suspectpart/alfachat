@@ -2,6 +2,9 @@
 from flask import abort, escape, Flask, request
 from flask import render_template
 from flask import send_from_directory
+
+from datetime import datetime
+
 from cache_bust import create_hash
 from messages import MessageParser
 from models import Chat, User
@@ -17,19 +20,23 @@ def static_from_root():
 
 @app.route("/<user_id>", methods=['GET'])
 def chat_read(user_id):
-    return render_template('alfachat.html', user=authenticate(user_id))
+    user = authenticate(user_id)
+    ts = int(datetime.now().timestamp())
+
+    return render_template('alfachat.html', user=user, timestamp=ts)
 
 
 @app.route("/<user_id>", methods=['POST'])
 def chat_write(user_id):
     user = authenticate(user_id)
+    ts = int(datetime.now().timestamp())
 
     raw_text = escape(request.form['message'])
 
     with Chat() as chat:
         chat.write(MessageParser().parse(user, raw_text))
 
-    return render_template('alfachat.html', user=user)
+    return render_template('alfachat.html', user=user, timestamp=ts)
 
 
 @app.route("/messages/<user_id>")
@@ -52,6 +59,15 @@ def archive(user_id):
     return render_template('archive.html', messages=messages, user=user)
 
 
+@app.route("/latest/<user_id>/<latest_pk>")
+def latest(user_id, latest_pk):
+
+    with Chat() as chat:
+        messages = [m for m in chat.read(100) if m.pk > int(latest_pk)]
+
+    return "[{0}]".format(",".join([m.to_json() for m in messages]))
+
+
 def authenticate(user_id):
     return User.find_by_user_id(user_id) or abort(404)
 
@@ -62,4 +78,4 @@ def hashed_url_for_static_file(endpoint, values):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080, debug=True)

@@ -23,8 +23,18 @@ iframe.chat-frame{
     margin-top: 30px;
 }
 
-div.private-message {
+div.private {
     color: #99CC33;
+}
+
+span.user {
+    float: left; 
+    width: 120px;
+}
+
+div.message {
+     margin-left:150px; 
+     margin-top:5px;
 }
 
 form.message-form {

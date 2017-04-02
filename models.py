@@ -179,11 +179,12 @@ class Message:
 
     repl = r'<a href="\g<1>" target="_blank">\g<1></a>'
 
-    def __init__(self, message_text, user, visible_to=None):
+    def __init__(self, message_text, user, visible_to=None, pk=-1):
         self.user = user
         self.text = message_text
         self.visible_to = visible_to or []
         self.is_private = Message.is_private(self.text)
+        self.pk = pk
 
     def html_text(self):
         return re.sub(self.pattern, self.repl, self.text)
@@ -199,6 +200,10 @@ class Message:
         return "[{0}] {1} (visible to {2})".format(
             self.user.username,
             self.text, ",".join(map(str, self.visible_to)))
+
+    def to_json(self):
+        return """{{"text":"{0}","pk":"{1}","user":"{2}","color":"{3}","private":{4}}}""".format(
+            self.text, self.pk, self.user.username, self.user.color, str(self.is_private).lower())
 
 
 class Chat(object):
@@ -241,12 +246,12 @@ class Chat(object):
         self._connection.commit()
 
     def read(self, limit=-1):
-        sql = """select message, user_id, visible_to
+        sql = """select message, user_id, visible_to, id
             from chat
             order by timestamp desc
             limit (?)"""
 
-        result = self._execute(sql, (limit,))
+        result = self._execute(sql, (limit,)).fetchall()
 
         return [self._to_message(r) for r in result][::-1]
 
@@ -260,6 +265,7 @@ class Chat(object):
     def _to_message(self, record):
         message_text = record[0]
         user = User.find_by_user_id(record[1])
+        pk = record[3]
 
         if not record[2]:
             visible_to = []
@@ -267,7 +273,7 @@ class Chat(object):
             visible_to = [User.find_by_user_id(
                 id) for id in record[2].split(",")]
 
-        return Message(message_text, user, visible_to)
+        return Message(message_text, user, visible_to, pk)
 
     def __enter__(self):
         return self
