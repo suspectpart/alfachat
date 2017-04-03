@@ -35,6 +35,25 @@ class BaseMessage(object):
         return False
 
 
+class PrivateMessage(BaseMessage):
+
+    """@&lt;user&gt; - Private Nachricht an @&lt;user&gt; senden"""
+
+    def __init__(self, user, message_string):
+        self.message_string = message_string
+        self.user = user
+        self.recipient = User.find_by_name(
+            self.message_string.split()[0][1:])
+
+    def execute(self):
+        return Message(self.message_string, self.user, visible_to=[
+            self.user, self.recipient])
+
+    @staticmethod
+    def handles(message):
+        return Message.is_private(message)
+
+
 class SmsMessage(BaseMessage):
 
     """/sms &lt;user&gt; &lt;text&gt;
@@ -118,25 +137,6 @@ class AppointmentMessage(BaseMessage):
     @staticmethod
     def handles(message):
         return message.startswith("/termine")
-
-
-class PrivateMessage(BaseMessage):
-
-    """@&lt;user&gt; - Private Nachricht an @&lt;user&gt; senden"""
-
-    def __init__(self, user, message_string):
-        self.message_string = message_string
-        self.user = user
-        self.recipient = User.find_by_name(
-            self.message_string.split()[0][1:])
-
-    def execute(self):
-        return Message(self.message_string, self.user, visible_to=[
-            self.user, self.recipient])
-
-    @staticmethod
-    def handles(message):
-        return Message.is_private(message)
 
 
 class ShowsMessage(BaseMessage):
