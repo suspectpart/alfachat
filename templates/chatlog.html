@@ -20,10 +20,20 @@
 				window.scrollTo(0,document.body.scrollHeight);
 			}
 
+			function htmlDecode(encodedString) {
+				var parser = new DOMParser;
+				var dom = parser.parseFromString('<!doctype html><body>' + encodedString, 'text/html');
+				return dom.body.textContent;
+			}
+
+			function updateLatestMessage(messages) {
+				latest_pk = messages.slice(-1)[0].pk;
+			}
+
 			function appendToChat(message) {
 				var message_text = document.createElement('div');
 				message_text.setAttribute("class", "message" + (message.private ? " private" : ""));
-				message_text.appendChild(document.createTextNode(message.text))
+				message_text.appendChild(document.createTextNode(htmlDecode(message.text)))
 				
 				var username = document.createElement('span');
 				username.setAttribute("style", "color:" + message.color);
@@ -44,8 +54,7 @@
 					appendToChat(messages[i]);
 				}
 
-				latest_pk = messages.slice(-1)[0].pk;
-
+				updateLatestMessage(messages)
 				scroll_to_bottom();
 			}
 
