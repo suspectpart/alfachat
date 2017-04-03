@@ -245,6 +245,17 @@ class Chat(object):
 
         return [self._to_message(r) for r in result][::-1]
 
+    def read_latest(self, pk):
+        sql = """select message, user_id, visible_to, id
+            from chat
+            where id > (?)
+            order by timestamp desc
+            """
+
+        result = self._execute(sql, (pk,)).fetchall()
+
+        return [self._to_message(r) for r in result][::-1]
+
     def remove_bot_messages_for(self, user):
         sql = """delete from chat
             where user_id = (?) and visible_to like (?);

@@ -58,8 +58,8 @@ def latest(user_id, latest_pk):
     user = authenticate(user_id)
 
     with Chat() as chat:
-        messages = [m for m in chat.read(100) if m.pk > int(
-            latest_pk) and m.is_visible_to(user)]
+        messages = list(filter(lambda m: m.is_visible_to(
+            user), chat.read_latest(latest_pk)))
 
     return "[{0}]".format(",".join([m.to_json() for m in messages]))
 
@@ -71,7 +71,3 @@ def authenticate(user_id):
 @app.url_defaults
 def hashed_url_for_static_file(endpoint, values):
     create_hash(endpoint, values, app)
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
