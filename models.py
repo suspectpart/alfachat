@@ -33,11 +33,10 @@ class TrumpTweet(object):
     def is_new(self):
         with open(".trump", "a+") as f:
             f.seek(0)
-            if f.read() == self.text:
-                return False
+            last_tweet = f.read()
             f.truncate()
             f.write(self.text)
-            return True
+            return last_tweet == self.text
 
 
 class SMS(object):
@@ -68,8 +67,7 @@ class Users(object):
     def __init__(self):
         self._connection = sqlite3.connect(PATH)
         self._initialize_database()
-        if not self.users:
-            self.users = self.all()
+        self.users = self.users or self.all()
 
     def _initialize_database(self):
         sql = """create table if not exists users (
