@@ -125,7 +125,9 @@ class AppointmentMessage(BaseMessage):
         self.user = user
 
     def execute(self):
-        return Message(self.get_appointments(), User.alfabot(), visible_to=[self.user])
+        return Message(self.get_appointments(),
+                       User.alfabot(),
+                       visible_to=[self.user])
 
     def get_appointments(self):
         if os.path.isfile(config.appointments_path):
@@ -148,7 +150,8 @@ class ShowsMessage(BaseMessage):
 
     def execute(self):
         if not os.path.isfile("shows.log"):
-            return Message("Keine Shows", User.alfabot(), visible_to=[self.user])
+            return Message("Keine Shows", User.alfabot(),
+                           visible_to=[self.user])
 
         all_shows = []
 

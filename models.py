@@ -90,7 +90,8 @@ class User(object):
 
             try:
                 connection.cursor().execute(
-                    sql, (self.username, str(self.user_id), self.color, self.number))
+                    sql, (self.username, str(self.user_id),
+                          self.color, self.number))
                 connection.commit()
                 return True
             except sqlite3.IntegrityError:
@@ -205,8 +206,13 @@ class Message:
         return (not self.visible_to) or (user in self.visible_to)
 
     def to_json(self):
-        return """{{"text":"{0}","pk":"{1}","user":"{2}","color":"{3}","private":{4}}}""".format(
-            self.text, self.pk, self.user.username, self.user.color, str(self.is_private).lower())
+        return """{{"text":"{0}",
+                    "pk":"{1}",
+                    "user":"{2}",
+                    "color":"{3}",
+                    "private":{4}}}""".format(
+            self.text, self.pk, self.user.username,
+            self.user.color, str(self.is_private).lower())
 
 
 class Chat(object):
