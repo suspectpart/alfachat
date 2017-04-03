@@ -1,28 +1,26 @@
-<!DOCTYPE html>
-<html lang="de">
-	<head>
-		<meta charset="utf-8">
-		<title>Alfachat</title>
-		<script type="text/javascript">
-			history.replaceState(null, document.title, location.href);
-		</script>
-		<link href="https://fonts.googleapis.com/css?family=Quicksand|Audiowide" rel="stylesheet"> 
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-	</head>
-    <body>
-		<div class="chat-window">
-			<h1 class="headline">Alfachat v2</h1>
-			<div><span class="underline">Angemeldet als:</span> &nbsp;&nbsp;<span style="color: {{user.color}};">[{{user.username}}]</span></div>
-			<iframe class="chat-frame" src="messages/{{user.user_id}}#scrolldown" charset="utf-8"></iframe>
-			<div class="message-form-container">
-				<form class="message-form" method="post" autocomplete="off">
-					<div style="width: 150px;display:inline-block;"></div><input type="text" name="message" class="message-field" placeholder="Deine Nachricht..." autofocus />
-					<input type="submit" value="Senden" />
-				</form>
-			</div>
-			<div class="footer">
-				<a href="/archiv/{{user.user_id}}" target="_blank">Archiv</a>
-			</div>
+{% extends "layout.html" %}
+
+{% block header %}
+	<title>Alfachat</title>
+	
+	<script type="text/javascript">
+		history.replaceState(null, document.title, location.href);
+	</script>
+{% endblock %}
+
+{% block body %}
+	<div class="chat-window">
+		<h1 class="headline">Alfachat v2</h1>
+		<div><span class="underline">Angemeldet als:</span> &nbsp;&nbsp;<span style="color: {{user.color}};">[{{user.username}}]</span></div>
+		<iframe class="chat-frame" src="messages/{{user.user_id}}#scrolldown" charset="utf-8"></iframe>
+		<div class="message-form-container">
+			<form class="message-form" method="post" autocomplete="off">
+				<div style="width: 150px;display:inline-block;"></div><input type="text" name="message" class="message-field" placeholder="Deine Nachricht..." autofocus />
+				<input type="submit" value="Senden" />
+			</form>
 		</div>
-	</body>
-</html>
+		<div class="footer">
+			<a href="/archiv/{{user.user_id}}" target="_blank">Archiv</a>
+		</div>
+	</div>
+{% endblock %}
