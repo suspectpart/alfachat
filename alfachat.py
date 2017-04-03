@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 from flask import abort, escape, Flask, request
-from flask import render_template
-from flask import send_from_directory
+from flask import render_template, send_from_directory
 
 from datetime import datetime
 
 from cache_bust import create_hash
 from messages import MessageParser
-from models import Chat, User
+from models import Chat, Users
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
@@ -66,7 +65,7 @@ def latest(user_id, latest_pk):
 
 
 def authenticate(user_id):
-    return User.find_by_user_id(user_id) or abort(404)
+    return Users().find_by_user_id(user_id) or abort(404)
 
 
 @app.url_defaults

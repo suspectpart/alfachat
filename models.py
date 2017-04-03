@@ -62,46 +62,13 @@ class SMS(object):
         return requests.get(url)
 
 
-class User(object):
+class Users(object):
 
-    def __init__(self, username, color, number, uuid):
-        self.username = username
-        self.color = color
-        self.number = number
-        self.user_id = uuid
+    def __init__(self):
+        self._connection = sqlite3.connect(PATH)
+        self._initialize_database()
 
-    def exists(self):
-        with sqlite3.connect(PATH) as connection:
-            User._initialize_database(connection)
-
-            sql = """select exists(select 1 from users where user_id=(?) LIMIT 1)
-            """
-            result = connection.cursor().execute(sql, (str(self.user_id),))
-            return bool(result.fetchone()[0])
-
-    def save(self):
-        with sqlite3.connect(PATH) as connection:
-            User._initialize_database(connection)
-
-            sql = """insert into users
-                (name, user_id, color, number)
-                values (?, ?, ?, ?)
-            """
-
-            try:
-                connection.cursor().execute(
-                    sql, (self.username, str(self.user_id),
-                          self.color, self.number))
-                connection.commit()
-                return True
-            except sqlite3.IntegrityError:
-                return False
-
-    def _execute(self, sql, params):
-        return self._connection.cursor().execute(sql, params)
-
-    @staticmethod
-    def _initialize_database(connection):
+    def _initialize_database(self):
         sql = """create table if not exists users (
             id integer primary key not null,
             name text not null,
@@ -110,59 +77,83 @@ class User(object):
             number text
         )"""
 
-        connection.cursor().execute(sql, ())
-        connection.commit()
+        self._connection.cursor().execute(sql, ())
+        self._connection.commit()
 
-    @staticmethod
-    def find_by_name(name):
-        with sqlite3.connect(PATH) as connection:
-            User._initialize_database(connection)
+    def all(self):
+        sql = """select * from users"""
 
-            sql = """select * from users where name=(?)
-            """
+        result = self._connection.cursor().execute(sql, ())
 
-            result = connection.cursor().execute(sql, (name,))
-            record = result.fetchone()
+        return [User(r[1], r[3], r[4], UUID(r[2])) for r in result]
 
-            if record:
-                return User(record[1], record[3], record[4], UUID(record[2]))
+    def find_by_name(self, name):
+        sql = """select * from users where name=(?)"""
 
-            return None
+        result = self._connection.cursor().execute(sql, (name,))
+        record = result.fetchone()
 
-    @staticmethod
-    def find_by_user_id(uuid_str):
-        with sqlite3.connect(PATH) as connection:
-            User._initialize_database(connection)
+        if record:
+            return User(record[1], record[3], record[4], UUID(record[2]))
 
-            sql = """select * from users where user_id=(?)
-            """
+        return None
 
-            result = connection.cursor().execute(sql, (uuid_str,))
-            record = result.fetchone()
+    def find_by_user_id(self, uuid_str):
+        sql = """select * from users where user_id=(?)"""
 
-            if record:
-                return User(record[1], record[3], record[4], UUID(record[2]))
+        result = self._connection.cursor().execute(sql, (uuid_str,))
+        record = result.fetchone()
 
-            return None
+        if record:
+            return User(record[1], record[3], record[4], UUID(record[2]))
 
-    @staticmethod
-    def all():
-        with sqlite3.connect(PATH) as connection:
-            User._initialize_database(connection)
+        return None
 
-            sql = """select * from users"""
+    def exists(self, user):
+        sql = """select exists(select 1 from users where user_id=(?)
+                LIMIT 1)"""
+        result = self._connection.cursor().execute(sql, (str(user.user_id),))
+        return bool(result.fetchone()[0])
 
-            result = connection.cursor().execute(sql, ())
+    def insert(self, user):
+        sql = """insert into users
+            (name, user_id, color, number)
+            values (?, ?, ?, ?)
+        """
 
-            return [User(r[1], r[3], r[4], UUID(r[2])) for r in result]
+        try:
+            self._connection.cursor().execute(
+                sql, (user.username, str(user.user_id),
+                      user.color, user.number))
+            self._connection.commit()
+            return True
+        except sqlite3.IntegrityError:
+            return False
 
-    @staticmethod
-    def trump():
-        return User.find_by_name("trump")
+    def trump(self):
+        return self.find_by_name("trump")
 
-    @staticmethod
-    def alfabot():
-        return User.find_by_name("alfabot")
+    def alfabot(self):
+        return self.find_by_name("alfabot")
+
+    def _execute(self, sql, params):
+        return self._connection.cursor().execute(sql, params)
+
+
+class User(object):
+
+    def __init__(self, username, color, number, uuid):
+        self.username = username
+        self.color = color
+        self.number = number
+        self.user_id = uuid
+        self.user_store = Users()
+
+    def exists(self):
+        return self.user_store.exists(self)
+
+    def save(self):
+        return self.user_store.insert(self)
 
     def __str__(self):
         return str(self.user_id)
@@ -193,7 +184,7 @@ class Message:
     @staticmethod
     def is_private(message):
         starts_with_at = message.startswith("@")
-        followed_by_user = bool(User.find_by_name(message.split()[0][1:]))
+        followed_by_user = bool(Users().find_by_name(message.split()[0][1:]))
 
         return starts_with_at and followed_by_user
 
@@ -272,7 +263,10 @@ class Chat(object):
             where user_id = (?) and visible_to like (?);
         """
 
-        self._execute(sql, (str(User.alfabot().user_id), str(user.user_id),))
+        alfabot_id = str(Users().alfabot().user_id)
+        user_id = str(user.user_id)
+
+        self._execute(sql, (alfabot_id, user_id,))
 
     def delete_latest_message_of(self, user):
         sql = """delete from chat where user_id = (?)
@@ -283,13 +277,13 @@ class Chat(object):
 
     def _to_message(self, record):
         message_text = record[0]
-        user = User.find_by_user_id(record[1])
+        user = Users().find_by_user_id(record[1])
         pk = record[3]
 
         if not record[2]:
             visible_to = []
         else:
-            visible_to = [User.find_by_user_id(
+            visible_to = [Users().find_by_user_id(
                 id) for id in record[2].split(",")]
 
         return Message(message_text, user, visible_to, pk)

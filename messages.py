@@ -42,7 +42,7 @@ class PrivateMessage(BaseMessage):
     def __init__(self, user, message_string):
         self.message_string = message_string
         self.user = user
-        self.recipient = User.find_by_name(
+        self.recipient = Users().find_by_name(
             self.message_string.split()[0][1:])
 
     def execute(self):
@@ -61,7 +61,7 @@ class SmsMessage(BaseMessage):
 
     def __init__(self, user, message_string):
         self.user = user
-        self.recipient = User.find_by_name(message_string.split()[1])
+        self.recipient = Users().find_by_name(message_string.split()[1])
         self.text = " ".join(message_string.split()[2:])
 
     def execute(self):
@@ -69,7 +69,7 @@ class SmsMessage(BaseMessage):
 
         message = "SMS gesendet an {0}".format(self.recipient.username)
 
-        return Message(message, User.alfabot(), visible_to=[self.user])
+        return Message(message, Users().alfabot(), visible_to=[self.user])
 
     @staticmethod
     def handles(message):
@@ -87,10 +87,10 @@ class TrumpMessage(BaseMessage):
         tweet = TrumpTweet()
 
         if tweet.is_new():
-            return Message(tweet.text, User.trump())
+            return Message(tweet.text, Users().trump())
         else:
             return Message("You already did that. SAD!",
-                           User.alfabot(), visible_to=[self.user])
+                           Users().alfabot(), visible_to=[self.user])
 
     @staticmethod
     def handles(message):
@@ -109,7 +109,7 @@ class AnnouncementMessage(BaseMessage):
     def execute(self):
         announcement_text = " ".join(self.message_string.split()[1:])
         message = self.text.format(announcement_text)
-        return Message(message, User.alfabot())
+        return Message(message, Users().alfabot())
 
     @staticmethod
     def handles(message):
@@ -126,7 +126,7 @@ class AppointmentMessage(BaseMessage):
 
     def execute(self):
         return Message(self.get_appointments(),
-                       User.alfabot(),
+                       Users().alfabot(),
                        visible_to=[self.user])
 
     def get_appointments(self):
@@ -150,7 +150,7 @@ class ShowsMessage(BaseMessage):
 
     def execute(self):
         if not os.path.isfile("shows.log"):
-            return Message("Keine Shows", User.alfabot(),
+            return Message("Keine Shows", Users().alfabot(),
                            visible_to=[self.user])
 
         all_shows = []
@@ -163,7 +163,7 @@ class ShowsMessage(BaseMessage):
         all_shows = [str(show) for show in all_shows]
         all_shows = "<b>Shows</b><br/><br/>" + "<br/>".join(all_shows)
 
-        return Message(all_shows, User.alfabot(), visible_to=[self.user])
+        return Message(all_shows, Users().alfabot(), visible_to=[self.user])
 
     @staticmethod
     def handles(message):
@@ -182,12 +182,13 @@ class AddShowMessage(BaseMessage):
     def execute(self):
         if not self.parse_showdate():
             error_msg = "Unzulässiges Datumsformat (erwartet: dd.mm.yyyy)"
-            return Message(error_msg, User.alfabot(), visible_to=[self.user])
+            alfabot = Users().alfabot()
+            return Message(error_msg, alfabot, visible_to=[self.user])
 
         with open("shows.log", 'a+') as shows:
             shows.write(self.show + "\n")
 
-        return Message(self.message, User.alfabot(), visible_to=[self.user])
+        return Message(self.message, Users().alfabot(), visible_to=[self.user])
 
     def parse_showdate(self):
         try:
@@ -214,7 +215,7 @@ class HelpMessage(BaseMessage):
             doc_str = message_type.__doc__
             help_text += "{0}<br/>".format(doc_str) if doc_str else ""
 
-        return Message(help_text, User.alfabot(), visible_to=[self.user])
+        return Message(help_text, Users().alfabot(), visible_to=[self.user])
 
     @staticmethod
     def handles(message):
