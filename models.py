@@ -63,10 +63,13 @@ class SMS(object):
 
 
 class Users(object):
+    users = []
 
     def __init__(self):
         self._connection = sqlite3.connect(PATH)
         self._initialize_database()
+        if not self.users:
+            self.users = self.all()
 
     def _initialize_database(self):
         sql = """create table if not exists users (
@@ -88,32 +91,16 @@ class Users(object):
         return [User(r[1], r[3], r[4], UUID(r[2])) for r in result]
 
     def find_by_name(self, name):
-        sql = """select * from users where name=(?)"""
-
-        result = self._connection.cursor().execute(sql, (name,))
-        record = result.fetchone()
-
-        if record:
-            return User(record[1], record[3], record[4], UUID(record[2]))
-
-        return None
+        matches = list(filter(lambda u: u.username == name, self.users))
+        return matches[0] if matches else None
 
     def find_by_user_id(self, uuid_str):
-        sql = """select * from users where user_id=(?)"""
-
-        result = self._connection.cursor().execute(sql, (uuid_str,))
-        record = result.fetchone()
-
-        if record:
-            return User(record[1], record[3], record[4], UUID(record[2]))
-
-        return None
+        matches = list(filter(lambda u: str(u.user_id) == uuid_str,
+                       self.users))
+        return matches[0] if matches else None
 
     def exists(self, user):
-        sql = """select exists(select 1 from users where user_id=(?)
-                LIMIT 1)"""
-        result = self._connection.cursor().execute(sql, (str(user.user_id),))
-        return bool(result.fetchone()[0])
+        return self.find_by_user_id(user.user_id) is not None
 
     def insert(self, user):
         sql = """insert into users
@@ -126,6 +113,10 @@ class Users(object):
                 sql, (user.username, str(user.user_id),
                       user.color, user.number))
             self._connection.commit()
+
+            # update users after insert
+            self.users = self.all()
+
             return True
         except sqlite3.IntegrityError:
             return False
@@ -136,9 +127,6 @@ class Users(object):
     def alfabot(self):
         return self.find_by_name("alfabot")
 
-    def _execute(self, sql, params):
-        return self._connection.cursor().execute(sql, params)
-
 
 class User(object):
 
@@ -147,13 +135,12 @@ class User(object):
         self.color = color
         self.number = number
         self.user_id = uuid
-        self.user_store = Users()
 
     def exists(self):
-        return self.user_store.exists(self)
+        return Users().exists(self)
 
     def save(self):
-        return self.user_store.insert(self)
+        return Users().insert(self)
 
     def __str__(self):
         return str(self.user_id)
