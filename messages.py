@@ -233,3 +233,20 @@ class DeleteMessage(BaseMessage):
     @staticmethod
     def handles(message):
         return message.startswith("/delete")
+
+
+class ClearMessage(BaseMessage):
+    """/clear - Entferne alle Messages vom Alfabot"""
+
+    def __init__(self, user, message_string):
+        self.user = user
+
+    def execute(self):
+        with Chat() as chat:
+            chat.remove_bot_messages_for(self.user)
+
+        return None
+
+    @staticmethod
+    def handles(message):
+        return message.startswith("/clear")

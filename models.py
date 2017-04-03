@@ -261,6 +261,13 @@ class Chat(object):
 
         return [self._to_message(r) for r in result][::-1]
 
+    def remove_bot_messages_for(self, user):
+        sql = """delete from chat
+            where user_id = (?) and visible_to like (?);
+        """
+
+        self._execute(sql, (str(User.alfabot().user_id), str(user.user_id),))
+
     def delete_latest_message_of(self, user):
         sql = """delete from chat where user_id = (?)
             order by timestamp desc limit 1
