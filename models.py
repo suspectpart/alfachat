@@ -16,8 +16,8 @@ class Show(object):
         self.show_str = show_str.strip()
         self.date = datetime.strptime(self.show_str.split()[0], '%d.%m.%Y')
 
-    def lies_in_past(self):
-        return self.date >= datetime.today()
+    def is_upcoming(self):
+        return self.date.date() >= datetime.today().date()
 
     def __str__(self):
         return self.show_str
