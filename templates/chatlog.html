@@ -17,7 +17,8 @@
 		var latest_pk = {{messages[-1].pk}};
 			
 			function scroll_to_bottom() {
-				window.scrollTo(0,document.body.scrollHeight);
+				chat = document.getElementById("chat-container");
+				chat.scrollTo(0, chat.scrollHeight);
 			}
 
 			function htmlDecode(encodedString) {

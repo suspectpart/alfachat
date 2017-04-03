@@ -26,6 +26,14 @@ div.chat-window {
     height: 85%;
 }
 
+div#chat-container {
+    border: 0px;
+    overflow-y: scroll;
+    overflow-x: auto;
+    width: 95%;
+    height: 80%;
+    margin-top: 30px;
+}
 
 iframe.chat-frame{
     border: 0px;

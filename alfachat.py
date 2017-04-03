@@ -21,32 +21,27 @@ def static_from_root():
 @app.route("/<user_id>", methods=['GET'])
 def chat_read(user_id):
     user = authenticate(user_id)
-    ts = int(datetime.now().timestamp())
+    timestamp = int(datetime.now().timestamp())
 
-    return render_template('alfachat.html', user=user, timestamp=ts)
+    with Chat() as chat:
+        messages = chat.read(150)
+
+    return render_template('alfachat.html',
+                           user=user,
+                           timestamp=timestamp,
+                           messages=messages)
 
 
 @app.route("/<user_id>", methods=['POST'])
 def chat_write(user_id):
     user = authenticate(user_id)
-    ts = int(datetime.now().timestamp())
 
     raw_text = escape(request.form['message'])
 
     with Chat() as chat:
         chat.write(MessageParser().parse(user, raw_text))
 
-    return render_template('alfachat.html', user=user, timestamp=ts)
-
-
-@app.route("/messages/<user_id>")
-def messages(user_id):
-    user = authenticate(user_id)
-
-    with Chat() as chat:
-        messages = chat.read(150)
-
-    return render_template('messages.html', messages=messages, user=user)
+    return chat_read(user_id)
 
 
 @app.route("/archiv/<user_id>")
@@ -63,7 +58,6 @@ def archive(user_id):
 def latest(user_id, latest_pk):
     user = authenticate(user_id)
 
-    # TODO: escape text
     with Chat() as chat:
         messages = [m for m in chat.read(100) if m.pk > int(
             latest_pk) and m.is_visible_to(user)]
