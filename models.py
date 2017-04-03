@@ -239,6 +239,9 @@ class Chat(object):
         self._connection.commit()
 
     def write(self, message):
+        if not message:
+            return
+
         sql = """insert into chat (message, user_id, visible_to)
             values (?, ?, ?)"""
 

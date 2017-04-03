@@ -228,7 +228,7 @@ class DeleteMessage(BaseMessage):
         with Chat() as chat:
             chat.delete_latest_message_of(self.user)
 
-        return Message("Message gelöscht", User.alfabot(), visible_to=[self.user])
+        return None
 
     @staticmethod
     def handles(message):
