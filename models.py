@@ -36,7 +36,7 @@ class TrumpTweet(object):
             last_tweet = f.read()
             f.truncate()
             f.write(self.text)
-            return last_tweet == self.text
+            return last_tweet != self.text
 
 
 class SMS(object):
