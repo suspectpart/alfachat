@@ -36,7 +36,8 @@ class TrumpTweet(object):
             last_tweet = f.read()
             f.truncate()
             f.write(self.text)
-            return last_tweet != self.text
+            f.flush()
+        return last_tweet != self.text
 
 
 class SMS(object):
@@ -78,13 +79,11 @@ class Users(object):
             number text
         )"""
 
-        self._connection.cursor().execute(sql, ())
+        self._execute(sql)
         self._connection.commit()
 
     def all(self):
-        sql = """select * from users"""
-
-        result = self._connection.cursor().execute(sql, ())
+        result = self._execute("""select * from users""")
 
         return [User(r[1], r[3], r[4], UUID(r[2])) for r in result]
 
@@ -94,7 +93,7 @@ class Users(object):
 
     def find_by_user_id(self, uuid_str):
         matches = list(filter(lambda u: str(u.user_id) == uuid_str,
-                       self.users))
+                              self.users))
         return matches[0] if matches else None
 
     def exists(self, user):
@@ -107,9 +106,8 @@ class Users(object):
         """
 
         try:
-            self._connection.cursor().execute(
-                sql, (user.username, str(user.user_id),
-                      user.color, user.number))
+            self._execute(sql, (user.username, str(
+                user.user_id), user.color, user.number))
             self._connection.commit()
 
             # update users after insert
@@ -124,6 +122,9 @@ class Users(object):
 
     def alfabot(self):
         return self.find_by_name("alfabot")
+
+    def _execute(self, sql, params=()):
+        return self._connection.cursor().execute(sql, params)
 
 
 class User(object):
@@ -197,15 +198,11 @@ class Chat(object):
         self._connection = sqlite3.connect(PATH)
         self._initialize_database()
 
-    def clear(self):
-        sql = """delete from chat"""
-        self._execute(sql, ())
-
     def close(self):
         self._connection.commit()
         self._connection.close()
 
-    def _execute(self, sql, params):
+    def _execute(self, sql, params=()):
         return self._connection.cursor().execute(sql, params)
 
     def _initialize_database(self):
@@ -217,7 +214,7 @@ class Chat(object):
             timestamp datetime default current_timestamp
         )"""
 
-        self._execute(sql, ())
+        self._execute(sql)
         self._connection.commit()
 
     def write(self, message):
