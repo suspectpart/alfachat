@@ -44,7 +44,7 @@ def messages(user_id):
     user = authenticate(user_id)
 
     with Chat() as chat:
-        messages = chat.read(250)
+        messages = chat.read(150)
 
     return render_template('messages.html', messages=messages, user=user)
 
@@ -61,9 +61,12 @@ def archive(user_id):
 
 @app.route("/latest/<user_id>/<latest_pk>")
 def latest(user_id, latest_pk):
+    user = authenticate(user_id)
 
+    # TODO: escape text
     with Chat() as chat:
-        messages = [m for m in chat.read(100) if m.pk > int(latest_pk)]
+        messages = [m for m in chat.read(100) if m.pk > int(
+            latest_pk) and m.is_visible_to(user)]
 
     return "[{0}]".format(",".join([m.to_json() for m in messages]))
 

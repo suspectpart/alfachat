@@ -201,6 +201,9 @@ class Message:
             self.user.username,
             self.text, ",".join(map(str, self.visible_to)))
 
+    def is_visible_to(self, user):
+        return (not self.visible_to) or (user in self.visible_to)
+
     def to_json(self):
         return """{{"text":"{0}","pk":"{1}","user":"{2}","color":"{3}","private":{4}}}""".format(
             self.text, self.pk, self.user.username, self.user.color, str(self.is_private).lower())

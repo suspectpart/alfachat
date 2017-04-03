@@ -1,6 +1,6 @@
 <div id="chat-container">
 {% for message in messages %}
-	{% if (not message.visible_to) or (user in message.visible_to) %}
+	{% if message.is_visible_to(user) %}
 		<div>
             <span class="user" style="color:{{message.user.color}};">[{{message.user.username}}]</span>
                    
