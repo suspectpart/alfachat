@@ -1,14 +1,26 @@
 body {
-    background-color: black;
+    background-color: #222222;
     color: white;
-    font-family: Courier New;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
 }
 
 a {
     color: #0099FF;
 }
 
+h1 {
+    font-family: 'Audiowide', cursive;
+    margin-bottom: 0px;
+}
+
+.underline {
+    text-decoration: underline dotted;
+}
+
 div.chat-window {
+    margin-left: 75px;
     position: absolute;
     width: 95%;
     height: 85%;
@@ -24,7 +36,7 @@ iframe.chat-frame{
 }
 
 div.private {
-    color: #99CC33;
+    color: #66FF66;
 }
 
 span.user {
@@ -37,11 +49,20 @@ div.message {
      margin-top:5px;
 }
 
+div.message-form-container {
+    margin-top: 30px;
+}
+
 form.message-form {
     top: 100px;
+}
+
+.message-field {
+    width: 75%;
 }
 
 div.footer {
     position: fixed;
     bottom:10px;
+    left: 100px;
 }

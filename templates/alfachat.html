@@ -6,16 +6,18 @@
 		<script type="text/javascript">
 			history.replaceState(null, document.title, location.href);
 		</script>
+		<link href="https://fonts.googleapis.com/css?family=Quicksand|Audiowide" rel="stylesheet"> 
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 	</head>
     <body>
 		<div class="chat-window">
-			<h1 class="headline">Willkommen im Alfachat, {{user.username}}!</h1>
+			<h1 class="headline">Alfachat v2</h1>
+			<div><span class="underline">Angemeldet als:</span> &nbsp;&nbsp;<span style="color: {{user.color}};">[{{user.username}}]</span></div>
 			<iframe class="chat-frame" src="messages/{{user.user_id}}#scrolldown" charset="utf-8"></iframe>
-			<div>
+			<div class="message-form-container">
 				<form class="message-form" method="post" autocomplete="off">
-					<span>Message: &nbsp;</span><input type="text" name="message" style="width:75%" autofocus />
-					<input type="submit" value="go!" />
+					<div style="width: 150px;display:inline-block;"></div><input type="text" name="message" class="message-field" placeholder="Deine Nachricht..." autofocus />
+					<input type="submit" value="Senden" />
 				</form>
 			</div>
 			<div class="footer">

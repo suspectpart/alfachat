@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-	<meta charset="utf-8">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body onload="javascript:window.scrollTo(0, document.body.scrollHeight)">
-	{% include 'chatlog.html' %}
-	
-	<a name="scrolldown" />
-</body>
+	<head>
+		<meta charset="utf-8">
+	    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	</head>
+	<body>
+		{% include 'chatlog.html' %}
+		
+		<a name="scrolldown"></a>
+	</body>
+</html>
