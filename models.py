@@ -23,15 +23,16 @@ class Show(object):
         return self.show_str
 
 
-class TrumpTweet(object):
+class Tweet(object):
 
     def __init__(self):
-        html = requests.get("https://mobile.twitter.com/realDonaldTrump").text
+        url = "https://mobile.twitter.com/{0}"
+        html = requests.get(url.format(config.GUEST_TWITTER_NAME)).text
         soup = bs4.BeautifulSoup(html, 'lxml')
         self.text = soup.find('div', 'tweet-text').div.text.strip()
 
     def is_new(self):
-        with open(".trump", "a+") as f:
+        with open(".guest", "a+") as f:
             f.seek(0)
             last_tweet = f.read()
             f.truncate()
@@ -117,8 +118,8 @@ class Users(object):
         except sqlite3.IntegrityError:
             return False
 
-    def trump(self):
-        return self.find_by_name("trump")
+    def guest(self):
+        return self.find_by_name("guest")
 
     def alfabot(self):
         return self.find_by_name("alfabot")

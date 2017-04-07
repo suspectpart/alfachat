@@ -76,25 +76,25 @@ class SmsMessage(BaseMessage):
         return message.startswith("/sms")
 
 
-class TrumpMessage(BaseMessage):
+class GuestMessage(BaseMessage):
 
-    """/trump - Letzten Tweet von @realDonaldTrump anzeigen"""
+    """/guest - Letzten Tweet des Gastes anzeigen"""
 
     def __init__(self, user, message_string):
         self.user = user
 
     def execute(self):
-        tweet = TrumpTweet()
+        tweet = Tweet()
 
         if tweet.is_new():
-            return Message(tweet.text, Users().trump())
+            return Message(tweet.text, Users().guest())
         else:
-            return Message("You already did that. SAD!",
+            return Message("Tweet wurde schon gelesen.",
                            Users().alfabot(), visible_to=[self.user])
 
     @staticmethod
     def handles(message):
-        return message.startswith("/trump")
+        return message.startswith("/guest")
 
 
 class AnnouncementMessage(BaseMessage):

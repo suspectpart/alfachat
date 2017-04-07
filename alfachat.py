@@ -7,6 +7,7 @@ from datetime import datetime
 from cache_bust import create_hash
 from messages import MessageParser
 from models import Chat, Users
+from config import GUEST_NAME
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
@@ -28,7 +29,8 @@ def chat_read(user_id):
     return render_template('alfachat.html',
                            user=user,
                            timestamp=timestamp,
-                           messages=messages)
+                           messages=messages,
+                           guest=GUEST_NAME)
 
 
 @app.route("/<user_id>", methods=['POST'])

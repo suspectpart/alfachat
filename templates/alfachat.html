@@ -11,7 +11,8 @@
 {% block body %}
 	<div class="chat-window">
 		<h1 class="headline">Alfachat v2</h1>
-		<div><span class="underline">Angemeldet als:</span> &nbsp;&nbsp;<span style="color: {{user.color}};">[{{user.username}}]</span></div>
+		<div><span class="underline">Angemeldet als:</span> &nbsp;&nbsp;<span style="color: {{user.color}};">[{{ user.username }}]</span></div>
+		<div><span class="underline">Gast der Woche:</span> &nbsp;&nbsp;<span style="color: orange;">{{ guest }}</span></div>
 		
 		{% include 'chatlog.html' %}
 		
