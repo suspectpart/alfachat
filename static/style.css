@@ -33,6 +33,7 @@ div#chat-container {
     width: 95%;
     height: 80%;
     margin-top: 30px;
+    overflow-wrap: break-word;
 }
 
 iframe.chat-frame{
