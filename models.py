@@ -5,7 +5,7 @@ import requests
 import sqlite3
 
 from datetime import datetime
-from uuid import UUID
+from uuid import UUID, uuid4
 
 PATH = "chat.sqlite"
 
@@ -119,7 +119,12 @@ class Users(object):
             return False
 
     def guest(self):
-        return self.find_by_name("guest")
+        guest_name = config.GUEST_NAME_SHORT
+        guest = self.find_by_name(guest_name)
+        if not guest:
+            guest = User(guest_name, 'orange', '', uuid4())
+            self.insert(guest)
+        return guest
 
     def alfabot(self):
         return self.find_by_name("alfabot")
