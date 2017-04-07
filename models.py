@@ -35,9 +35,9 @@ class Tweet(object):
         with open(".guest", "a+") as f:
             f.seek(0)
             last_tweet = f.read()
+            f.seek(0)
             f.truncate()
             f.write(self.text)
-            f.flush()
         return last_tweet != self.text
 
 
