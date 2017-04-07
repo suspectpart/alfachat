@@ -16,8 +16,8 @@ class Show(object):
         self.show_str = show_str.strip()
         self.date = datetime.strptime(self.show_str.split()[0], '%d.%m.%Y')
 
-    def lies_in_past(self):
-        return self.date >= datetime.today()
+    def is_upcoming(self):
+        return self.date.date() >= datetime.today().date()
 
     def __str__(self):
         return self.show_str
@@ -33,11 +33,11 @@ class TrumpTweet(object):
     def is_new(self):
         with open(".trump", "a+") as f:
             f.seek(0)
-            if f.read() == self.text:
-                return False
+            last_tweet = f.read()
             f.truncate()
             f.write(self.text)
-            return True
+            f.flush()
+        return last_tweet != self.text
 
 
 class SMS(object):
@@ -68,8 +68,7 @@ class Users(object):
     def __init__(self):
         self._connection = sqlite3.connect(PATH)
         self._initialize_database()
-        if not self.users:
-            self.users = self.all()
+        self.users = self.users or self.all()
 
     def _initialize_database(self):
         sql = """create table if not exists users (
@@ -80,13 +79,11 @@ class Users(object):
             number text
         )"""
 
-        self._connection.cursor().execute(sql, ())
+        self._execute(sql)
         self._connection.commit()
 
     def all(self):
-        sql = """select * from users"""
-
-        result = self._connection.cursor().execute(sql, ())
+        result = self._execute("""select * from users""")
 
         return [User(r[1], r[3], r[4], UUID(r[2])) for r in result]
 
@@ -96,7 +93,7 @@ class Users(object):
 
     def find_by_user_id(self, uuid_str):
         matches = list(filter(lambda u: str(u.user_id) == uuid_str,
-                       self.users))
+                              self.users))
         return matches[0] if matches else None
 
     def exists(self, user):
@@ -109,9 +106,8 @@ class Users(object):
         """
 
         try:
-            self._connection.cursor().execute(
-                sql, (user.username, str(user.user_id),
-                      user.color, user.number))
+            self._execute(sql, (user.username, str(
+                user.user_id), user.color, user.number))
             self._connection.commit()
 
             # update users after insert
@@ -126,6 +122,9 @@ class Users(object):
 
     def alfabot(self):
         return self.find_by_name("alfabot")
+
+    def _execute(self, sql, params=()):
+        return self._connection.cursor().execute(sql, params)
 
 
 class User(object):
@@ -199,15 +198,11 @@ class Chat(object):
         self._connection = sqlite3.connect(PATH)
         self._initialize_database()
 
-    def clear(self):
-        sql = """delete from chat"""
-        self._execute(sql, ())
-
     def close(self):
         self._connection.commit()
         self._connection.close()
 
-    def _execute(self, sql, params):
+    def _execute(self, sql, params=()):
         return self._connection.cursor().execute(sql, params)
 
     def _initialize_database(self):
@@ -219,7 +214,7 @@ class Chat(object):
             timestamp datetime default current_timestamp
         )"""
 
-        self._execute(sql, ())
+        self._execute(sql)
         self._connection.commit()
 
     def write(self, message):
@@ -242,6 +237,17 @@ class Chat(object):
             limit (?)"""
 
         result = self._execute(sql, (limit,)).fetchall()
+
+        return [self._to_message(r) for r in result][::-1]
+
+    def read_latest(self, pk):
+        sql = """select message, user_id, visible_to, id
+            from chat
+            where id > (?)
+            order by timestamp desc
+            """
+
+        result = self._execute(sql, (pk,)).fetchall()
 
         return [self._to_message(r) for r in result][::-1]
 

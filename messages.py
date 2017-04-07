@@ -158,7 +158,7 @@ class ShowsMessage(BaseMessage):
         with open("shows.log", 'r') as shows:
             all_shows = [Show(s) for s in shows]
 
-        all_shows = filter(lambda show: show.lies_in_past(), all_shows)
+        all_shows = filter(lambda show: show.is_upcoming(), all_shows)
         all_shows = sorted(all_shows, key=lambda show: show.date)
         all_shows = [str(show) for show in all_shows]
         all_shows = "<b>Shows</b><br/><br/>" + "<br/>".join(all_shows)

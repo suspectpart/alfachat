@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
+import argparse
 import sys
 import uuid
 
 from models import User
 
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("corret usage: ./adduser.py <username> <color> [<number>]")
-        sys.exit(1)
+parser = argparse.ArgumentParser(description='Add a new user.')
 
-    username, color = sys.argv[1:3]
-    number = sys.argv[3] if len(sys.argv) > 3 else ""
-    user_id = uuid.uuid4()
+parser.add_argument('username', metavar='username')
+parser.add_argument('color', metavar='color')
+parser.add_argument('--number', metavar='number', default='',
+                    help="Mobile number for SMS feature")
 
-    url = "http://localhorst.duckdns.org:8080/{0}".format(str(user_id))
+args = parser.parse_args()
 
-    user = User(username, color, number, user_id).save()
+user_id = uuid.uuid4()
+user = User(args.username, args.color, args.number, user_id).save()
 
-    print("Added user {0} ({1})".format(username, url))
+url = "http://localhorst.duckdns.org:8080/{0}".format(str(user_id))
+print("Added user {0} ({1})".format(args.username, url))
 
-    sys.exit(0)
+sys.exit(0)
