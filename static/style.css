@@ -44,7 +44,7 @@ iframe.chat-frame{
     margin-top: 30px;
 }
 
-div.private {
+.private {
     color: #66FF66;
 }
 
@@ -74,4 +74,8 @@ div.footer {
     position: fixed;
     bottom:10px;
     left: 100px;
+}
+
+input.private {
+	color: green;
 }

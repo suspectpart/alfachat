@@ -18,7 +18,7 @@
 		
 		<div class="message-form-container">
 			<form class="message-form" method="post" autocomplete="off">
-				<div style="width: 150px;display:inline-block;"></div><input type="text" name="message" class="message-field" placeholder="Deine Nachricht..." autofocus />
+				<div style="width: 150px;display:inline-block;"></div><input type="text" id="input_message" name="message" class="message-field" placeholder="Deine Nachricht..." autofocus />
 				<input type="submit" value="Senden" />
 			</form>
 		</div>
@@ -26,4 +26,23 @@
 			<a href="/archiv/{{user.user_id}}" target="_blank">Archiv</a>
 		</div>
 	</div>
+
+	<script type="text/javascript">
+		var usernames = [
+			{% for user in users %}
+				"@{{user.username}}"
+			{% endfor %}
+		];
+
+		var message_input = document.getElementById("input_message");
+		message_input.addEventListener("keyup", function() {
+			token = message_input.value.split(" ")[0];
+			if(usernames.indexOf(token) != -1) {
+				message_input.classList.add("private");
+			}
+			else {
+				message_input.classList.remove("private");
+			}
+		});
+	</script>
 {% endblock %}

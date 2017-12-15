@@ -16,62 +16,62 @@
 	(function()  {
 		var latest_pk = {{latest_pk}};
 			
-			function scroll_to_bottom() {
-				chat = document.getElementById("chat-container");
-				chat.scrollTop = chat.scrollHeight;
+		function scroll_to_bottom() {
+			chat = document.getElementById("chat-container");
+			chat.scrollTop = chat.scrollHeight;
+		}
+
+		function htmlDecode(encodedString) {
+			var parser = new DOMParser;
+			var dom = parser.parseFromString('<!doctype html><body>' + encodedString, 'text/html');
+			return dom.body.textContent;
+		}
+
+		function updateLatestMessage(messages) {
+			latest_pk = messages.slice(-1)[0].pk;
+		}
+
+		function appendToChat(message) {
+			var message_text = document.createElement('div');
+			message_text.setAttribute("class", "message" + (message.private ? " private" : ""));
+			message_text.appendChild(document.createTextNode(htmlDecode(message.text)))
+			
+			var username = document.createElement('span');
+			username.setAttribute("style", "color:" + message.color);
+			username.setAttribute("class", "user")
+			username.appendChild(document.createTextNode("[" + message.user + "]"))
+
+			var container = document.createElement('div');
+			container.appendChild(username);
+			container.appendChild(message_text);
+
+			document.getElementById("chat-container").appendChild(container);
+		}
+
+		function display(messages) {		
+			if(messages.length === 0) { return; }
+
+			for(var i = 0; i < messages.length; i++) {
+				appendToChat(messages[i]);
 			}
 
-			function htmlDecode(encodedString) {
-				var parser = new DOMParser;
-				var dom = parser.parseFromString('<!doctype html><body>' + encodedString, 'text/html');
-				return dom.body.textContent;
-			}
-
-			function updateLatestMessage(messages) {
-				latest_pk = messages.slice(-1)[0].pk;
-			}
-
-			function appendToChat(message) {
-				var message_text = document.createElement('div');
-				message_text.setAttribute("class", "message" + (message.private ? " private" : ""));
-				message_text.appendChild(document.createTextNode(htmlDecode(message.text)))
-				
-				var username = document.createElement('span');
-				username.setAttribute("style", "color:" + message.color);
-				username.setAttribute("class", "user")
-				username.appendChild(document.createTextNode("[" + message.user + "]"))
-
-				var container = document.createElement('div');
-				container.appendChild(username);
-				container.appendChild(message_text);
-
-				document.getElementById("chat-container").appendChild(container);
-			}
-
-			function display(messages) {		
-				if(messages.length === 0) { return; }
-
-				for(var i = 0; i < messages.length; i++) {
-					appendToChat(messages[i]);
-				}
-
-				updateLatestMessage(messages)
-				scroll_to_bottom();
-			}
-
-			function getNewMessages() {
-					var xhttp = new XMLHttpRequest();
-					xhttp.onreadystatechange = function() {
-						if (this.readyState == 4 && this.status == 200) {
-								display(JSON.parse(this.responseText));
-						}
-					};
-
-					xhttp.open("GET", "/latest/{{user.user_id}}/" + latest_pk, true);
-					xhttp.send();
-			} 
-
-			setInterval(getNewMessages, 10000);
+			updateLatestMessage(messages)
 			scroll_to_bottom();
+		}
+
+		function getNewMessages() {
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function() {
+					if (this.readyState == 4 && this.status == 200) {
+							display(JSON.parse(this.responseText));
+					}
+				};
+
+				xhttp.open("GET", "/latest/{{user.user_id}}/" + latest_pk, true);
+				xhttp.send();
+		} 
+
+		setInterval(getNewMessages, 10000);
+		scroll_to_bottom();
 	})();
 </script>

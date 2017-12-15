@@ -26,13 +26,14 @@ def chat_read(user_id):
     with Chat() as chat:
         messages = chat.read(150)
     
-    latest_pk = messages[-1] if messages else 0
+    latest_pk = messages[-1].pk if messages else 0
 
     return render_template('alfachat.html',
                            user=user,
                            timestamp=timestamp,
                            messages=messages,
                            guest=GUEST_NAME,
+                           users=Users().all(),
                            latest_pk=latest_pk)
 
 
