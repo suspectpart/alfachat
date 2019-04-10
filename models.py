@@ -157,7 +157,7 @@ class User(object):
 
 
 class Message:
-    pattern = re.compile(r"(\b(?:(?:https?):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#/%=~_|$?!:,.]*\)|[A-Z0-9+&@#/%=~_|$]))", flags=re.I)
+    pattern = re.compile(r"(https?:\/\/[^\s()]+)")
 
     repl = r'<a href="\g<1>" target="_blank">\g<1></a>'
 
